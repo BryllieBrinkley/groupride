@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-canvas text-ink antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.07), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fa 100%);
+}
+
+a {
+  @apply text-inherit no-underline;
+}
+
+* {
+  @apply border-line;
+}
+
+.app-shell {
+  @apply mx-auto min-h-screen max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
+}
+
+.panel {
+  @apply rounded-xl2 border border-line bg-panel shadow-card transition duration-200;
+}
+
+.panel-muted {
+  @apply rounded-xl2 border border-line bg-white/90 shadow-card backdrop-blur;
+}
+
+.eyebrow {
+  @apply inline-flex items-center rounded-full border border-accent/10 bg-accentSoft px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink;
+}
+
+.headline {
+  @apply text-balance text-4xl font-bold tracking-[-0.03em] sm:text-5xl;
+}
+
+.subcopy {
+  @apply max-w-2xl text-base leading-7 text-copy sm:text-lg;
+}
+
+.button-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-ink px-5 py-3 text-sm font-semibold text-white shadow-button transition hover:bg-[#08172c] disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.button-secondary {
+  @apply inline-flex items-center justify-center rounded-lg border border-line bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.input {
+  @apply h-12 w-full rounded-xl border border-line bg-white px-4 text-sm text-ink outline-none transition placeholder:text-copyMuted focus:border-accent focus:ring-4 focus:ring-accent/10;
+}
+
+.select {
+  @apply input appearance-none;
+}
+
+.textarea {
+  @apply min-h-24 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-copyMuted focus:border-accent focus:ring-4 focus:ring-accent/10;
+}
+
+.metric-card {
+  @apply rounded-xl2 border border-line bg-white p-6 shadow-card;
+}
+
+.status-dot {
+  @apply inline-block h-2.5 w-2.5 rounded-full bg-accent;
+}
