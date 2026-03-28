@@ -1,219 +1,171 @@
-"use client";
+"use client"
 
-import { ArrowRight } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation"
+import { Suspense } from "react"
+import { Navbar } from "@/components/navbar"
+import { ArrowRight } from "lucide-react"
 
-import { PublicNavbar } from "@/components/public-navbar";
-import type { QuoteResult, TripRequestInput, VehicleCategory } from "@/lib/types";
-import { cn, formatCurrency, formatNumber } from "@/lib/utils";
-
-type QuoteState = {
-  pickup: string;
-  dropoff: string;
-  pickupDateTime: string;
-  passengers: number;
-};
+interface Vehicle {
+  id: string
+  name: string
+  description: string
+  price: string
+  isBestFit?: boolean
+  isCustom?: boolean
+  features?: string[]
+}
 
 function QuoteContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [quote, setQuote] = useState<QuoteResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const passengers = parseInt(searchParams.get("passengers") || "12")
+  const pickup = searchParams.get("pickup") || ""
+  const dropoff = searchParams.get("dropoff") || ""
+  const distance = parseInt(searchParams.get("distance") || "0")
+  const duration = parseInt(searchParams.get("duration") || "0")
+  
+  // Show charter flight only for long-distance trips (>250 miles or >4 hours)
+  const isLongDistance = distance > 250 || duration > 240
 
-  const state = useMemo<QuoteState>(
-    () => ({
-      pickup: searchParams.get("pickup") || "Main airport terminal, Nashville, TN",
-      dropoff: searchParams.get("dropoff") || "Wedding venue or hotel, Nashville, TN",
-      pickupDateTime: searchParams.get("pickupDateTime") || defaultPickupDateTime(),
-      passengers: Math.max(1, Number.parseInt(searchParams.get("passengers") || "12", 10) || 12)
-    }),
-    [searchParams]
-  );
+  const vehicles: Vehicle[] = [
+    {
+      id: "sprinter",
+      name: "sprinter van",
+      description: "seats 10-15, ideal for small groups",
+      price: "$220",
+      isBestFit: passengers <= 14,
+      features: ["comfortable seating", "luggage space"],
+    },
+    {
+      id: "minibus",
+      name: "mini bus",
+      description: "seats 20-35, more space",
+      price: "$350",
+      isBestFit: passengers >= 15 && passengers <= 35,
+      features: ["extra legroom", "onboard restroom"],
+    },
+    {
+      id: "charter",
+      name: "charter bus",
+      description: "seats 36-56, full amenities",
+      price: "$650",
+      isBestFit: passengers > 35,
+      features: ["wifi available", "climate control"],
+    },
+    ...(isLongDistance ? [{
+      id: "flight",
+      name: "charter flight",
+      description: "seats 6-30+, premium travel",
+      price: "from $6,000",
+      isCustom: true,
+      features: ["skip traffic", "long-distance trips"],
+    }] : []),
+  ]
 
-  useEffect(() => {
-    let active = true;
-
-    const loadQuote = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch("/api/quote", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(buildTripRequest(state))
-        });
-
-        const payload = (await response.json()) as QuoteResult & { error?: string };
-        if (!response.ok) {
-          throw new Error(payload.error ?? "Unable to quote this trip.");
-        }
-
-        if (active) {
-          setQuote(payload);
-        }
-      } catch (nextError) {
-        if (active) {
-          setError(nextError instanceof Error ? nextError.message : "Unable to quote this trip.");
-          setQuote(null);
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadQuote();
-
-    return () => {
-      active = false;
-    };
-  }, [state]);
-
-  const goToCheckout = (category: VehicleCategory) => {
-    const params = new URLSearchParams({
-      pickup: state.pickup,
-      dropoff: state.dropoff,
-      pickupDateTime: state.pickupDateTime,
-      passengers: String(state.passengers),
-      vehicle: category
-    });
-
-    router.push(`/checkout?${params.toString()}`);
-  };
+  const handleSelect = (vehicle: Vehicle) => {
+    if (vehicle.isCustom) {
+      router.push("/quote/request")
+    } else {
+      const params = new URLSearchParams({
+        vehicle: vehicle.id,
+        price: vehicle.price,
+        pickup,
+        dropoff,
+        passengers: passengers.toString(),
+      })
+      router.push(`/checkout?${params.toString()}`)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f3]">
-      <PublicNavbar />
-      <div className="mx-auto max-w-md px-6 pb-20 pt-16 lg:px-12">
-        <div className="mb-12">
-          <h1 className="mb-3 text-2xl lowercase text-black">choose your vehicle</h1>
-          <p className="text-sm lowercase text-black/60">
-            {state.passengers} passengers · estimated pricing
-            <span className="mt-1 block">
-              {state.pickup} to {state.dropoff}
-            </span>
-          </p>
-        </div>
-
-        {loading ? (
-          <div className="rounded-2xl border border-black/10 bg-white p-6 text-sm text-black/60">
-            Calculating your estimate...
+    <main className="min-h-screen bg-background">
+      <Navbar />
+      
+      <div className="pt-32 pb-20 px-6 lg:px-12">
+        <div className="max-w-md mx-auto">
+          {/* Header */}
+          <div className="mb-12">
+            <h1 className="text-2xl font-normal text-foreground lowercase mb-3">
+              select your ride
+            </h1>
+            <p className="text-sm text-muted-foreground lowercase">
+              {passengers} passengers
+              {pickup && dropoff && (
+                <span className="block mt-1">
+                  {pickup} to {dropoff}
+                </span>
+              )}
+            </p>
           </div>
-        ) : null}
 
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{error}</div>
-        ) : null}
-
-        {quote ? (
-          <>
-            <div className="mb-8 rounded-2xl border border-black/10 bg-white p-5 text-sm text-black/70">
-              <p>{formatNumber(quote.route.distanceMiles)} miles</p>
-              <p className="mt-1">{quote.route.estimatedDurationMinutes} minute estimate</p>
-              {quote.notes.map((note) => (
-                <p key={note} className="mt-3">
-                  {note}
-                </p>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              {quote.vehicleChoices.map((choice) => (
-                <button
-                  key={choice.category}
-                  type="button"
-                  onClick={() => goToCheckout(choice.category)}
-                  className={cn(
-                    "w-full rounded-2xl border bg-white p-6 text-left transition",
-                    choice.category === quote.recommendedVehicle
-                      ? "border-black text-black"
-                      : "border-black/10 text-black hover:border-black/35"
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-6">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h2 className="text-base lowercase">{vehicleName(choice.category)}</h2>
-                        <span className="text-[10px] uppercase tracking-[0.18em] text-black/45">{choice.badge}</span>
+          {/* Vehicle Options */}
+          <div className="space-y-4">
+            {vehicles.map((vehicle) => (
+              <button
+                key={vehicle.id}
+                onClick={() => handleSelect(vehicle)}
+                className={`w-full text-left p-6 rounded-lg border transition-all group ${
+                  vehicle.isBestFit
+                    ? "bg-card border-foreground"
+                    : "bg-card border-border hover:border-foreground/40"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-base font-medium text-foreground lowercase">
+                        {vehicle.name}
+                      </h3>
+                      {vehicle.isBestFit && (
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          recommended
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1 lowercase">
+                      {vehicle.description}
+                    </p>
+                    {vehicle.features && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+                        {vehicle.features.map((feature) => (
+                          <span key={feature} className="text-xs text-muted-foreground lowercase flex items-center gap-1.5">
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/60" />
+                            {feature}
+                          </span>
+                        ))}
                       </div>
-                      <p className="mt-1 text-sm lowercase text-black/60">{choice.reason}</p>
-                      <p className="mt-3 text-xs uppercase tracking-[0.18em] text-black/45">
-                        {choice.matchedOperatorIds.length} partners in area
-                      </p>
-                    </div>
-
-                    <div className="shrink-0 text-right">
-                      <p className="text-lg">{formatCurrency(choice.amount)}</p>
-                    </div>
+                    )}
                   </div>
-
-                  <div className="mt-5 flex items-center justify-end gap-2 text-sm lowercase text-black/60">
-                    select
-                    <ArrowRight className="h-4 w-4" />
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-lg font-medium text-foreground">
+                      {vehicle.price}
+                    </p>
+                    {vehicle.isCustom && (
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        custom
+                      </span>
+                    )}
                   </div>
-                </button>
-              ))}
-            </div>
-          </>
-        ) : null}
+                </div>
+                <div className="flex items-center justify-end mt-5 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  <span className="lowercase">
+                    {vehicle.isCustom ? "request quote" : "select"}
+                  </span>
+                  <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
 
 export default function QuotePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f7f7f3]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
       <QuoteContent />
     </Suspense>
-  );
-}
-
-function buildTripRequest(state: QuoteState): TripRequestInput {
-  return {
-    tripType: "one_way",
-    pickupLocation: textToLocation(state.pickup, "Charlotte", "NC"),
-    dropoffLocation: textToLocation(state.dropoff, "Charlotte", "NC"),
-    stops: [],
-    pickupDateTimeLocal: state.pickupDateTime,
-    passengers: state.passengers,
-    luggageCount: Math.max(0, Math.ceil(state.passengers * 0.5)),
-    contactName: "Trip organizer",
-    contactEmail: "organizer@groupride.app",
-    contactPhone: "704-555-0100"
-  };
-}
-
-function textToLocation(value: string, fallbackCity: string, fallbackState: string) {
-  const parts = value
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  return {
-    addressLine: parts[0] || value,
-    city: parts[1] || fallbackCity,
-    state: parts[2] || fallbackState,
-    postalCode: ""
-  };
-}
-
-function vehicleName(category: VehicleCategory) {
-  const names: Record<VehicleCategory, string> = {
-    suv: "luxury suv",
-    sprinter: "sprinter / shuttle van",
-    minibus: "mini coach / charter bus"
-  };
-
-  return names[category];
-}
-
-function defaultPickupDateTime() {
-  const future = new Date(Date.now() + 30 * 60 * 60 * 1000);
-  const offset = future.getTimezoneOffset() * 60_000;
-  return new Date(future.getTime() - offset).toISOString().slice(0, 16);
+  )
 }
