@@ -20,13 +20,13 @@ export default async function OperatorPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Operator workspace"
-        title="request inbox."
-        description="Review incoming trips quickly, keep response quality high, and maintain a clean dispatch view for confirmed work."
+        eyebrow="Partner dashboard"
+        title="incoming trips."
+        description="Review open requests, accept work that fits your fleet, and track what’s confirmed—all in one place."
         meta={
           <div className="flex flex-wrap gap-3">
-            <Badge variant="blue">Status: live</Badge>
-            <Badge variant="neutral">Est. response: same day</Badge>
+            <Badge variant="blue">Receiving requests</Badge>
+            <Badge variant="neutral">Same-day reply target</Badge>
           </div>
         }
       >
@@ -40,12 +40,12 @@ export default async function OperatorPage() {
       </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SystemStatCard label="Pending offers" value={`${pendingOffers.length}`} supporting="Requests waiting on operator review." />
-        <SystemStatCard label="Confirmed trips" value={`${bookings.length}`} supporting="Accepted work in the current queue." icon={<Clock3 className="h-5 w-5" />} />
+        <SystemStatCard label="Open offers" value={`${pendingOffers.length}`} supporting="Trips waiting on your response." />
+        <SystemStatCard label="Confirmed trips" value={`${bookings.length}`} supporting="Upcoming rides you’ve accepted." icon={<Clock3 className="h-5 w-5" />} />
         <SystemStatCard
-          label="Potential revenue"
+          label="Pipeline value"
           value={formatCurrency(offers.filter((entry) => entry.booking).reduce((sum, entry) => sum + (entry.booking?.activeAmount ?? 0), 0))}
-          supporting="Open offer value before acceptance."
+          supporting="Estimated value of open offers."
           icon={<Wallet className="h-5 w-5" />}
         />
       </div>
@@ -54,8 +54,8 @@ export default async function OperatorPage() {
         <Card className="bg-[#F6F8FA]">
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Offer queue</p>
-              <CardTitle className="mt-4">Requests waiting for review</CardTitle>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">New requests</p>
+              <CardTitle className="mt-4">Needs your review</CardTitle>
             </div>
             <Link href="/operator/offers" className="inline-flex rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-[#F9FAFB]">
               Open queue
@@ -85,8 +85,8 @@ export default async function OperatorPage() {
 
         <Card className="bg-[#F6F8FA]">
           <CardHeader>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Confirmed work</p>
-            <CardTitle className="mt-4">Accepted trips</CardTitle>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">On your calendar</p>
+            <CardTitle className="mt-4">Confirmed rides</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {bookings.map((booking) => (
@@ -102,7 +102,7 @@ export default async function OperatorPage() {
                 </div>
               </div>
             ))}
-            {bookings.length === 0 ? <p className="text-sm text-copy-muted">No accepted bookings yet.</p> : null}
+            {bookings.length === 0 ? <p className="text-sm text-copy-muted">No confirmed rides yet.</p> : null}
           </CardContent>
         </Card>
       </div>

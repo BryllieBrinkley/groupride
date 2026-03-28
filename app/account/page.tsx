@@ -16,19 +16,19 @@ export default async function AccountPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Customer account"
-        title="your trips."
-        description="Track active requests, review status, and reopen the trip detail page whenever you need the latest update."
+        eyebrow="Your account"
+        title="your group trips."
+        description="Every request and confirmed ride in one place—open a trip anytime for status, payment, and pickup details."
         meta={
           <div className="flex flex-wrap gap-3">
-            <Badge variant="neutral">Travel history</Badge>
-            <Badge variant="blue">Tracking: active</Badge>
+            <Badge variant="neutral">Trip history</Badge>
+            <Badge variant="blue">Status updates on</Badge>
           </div>
         }
       />
 
       <div className="space-y-4">
-        {bookings.length === 0 ? <Card className="bg-[#F6F8FA]"><CardContent className="py-6 text-sm text-copy-muted">No bookings yet. Create one from the booking flow.</CardContent></Card> : null}
+        {bookings.length === 0 ? <Card className="bg-[#F6F8FA]"><CardContent className="py-6 text-sm text-copy-muted">No trips yet. Start a booking from the home page or Book a trip.</CardContent></Card> : null}
         {bookings.map((booking) => (
           <Link key={booking.id} href={`/booking/${booking.id}`} className="block">
             <Card className="bg-[#F6F8FA] transition hover:border-accent">

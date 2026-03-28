@@ -12,13 +12,13 @@ export default async function AdminOperatorsPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Supply directory"
+        eyebrow="Transportation partners"
         title="operator network."
-        description="Track service area coverage, vehicle fit, and which operators are ready for higher-value group work."
+        description="See who covers which markets, what they run, and who is ready for weddings, sports travel, and corporate groups."
         meta={
           <div className="flex flex-wrap gap-3">
-            <Badge variant="blue">Supply: vetted</Badge>
-            <Badge variant="neutral">Model: guided dispatch</Badge>
+            <Badge variant="blue">Verified partners</Badge>
+            <Badge variant="neutral">Marketplace dispatch</Badge>
           </div>
         }
       >
@@ -44,7 +44,7 @@ export default async function AdminOperatorsPage() {
                     Rating {operator.rating.toFixed(1)} • {operator.status}
                   </p>
                 </div>
-                <Badge variant="neutral">Verified operator</Badge>
+                <Badge variant="neutral">Verified partner</Badge>
               </div>
 
               <div className="mt-6 grid gap-4 lg:grid-cols-2">

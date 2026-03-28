@@ -19,8 +19,8 @@ export default async function AdminBookingsPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Booking queue"
-        title="manual review."
-        description="Use this queue to route supply, request revised quote approval, recover at-risk bookings, and close trips cleanly when no supply is available."
+        title="trip queue."
+        description="Send requests to transportation partners, adjust pricing with customer approval, and close trips that can’t be fulfilled."
         meta={
           <div className="flex flex-wrap gap-3">
             <Badge variant="neutral">Control: pricing + supply</Badge>

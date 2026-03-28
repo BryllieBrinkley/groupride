@@ -33,26 +33,26 @@ export default async function BookingPage({
 
   const statusHeadline =
     detail.booking.status === "confirmed"
-      ? "request confirmed."
+      ? "trip confirmed."
       : detail.booking.status === "payment_action_required"
-        ? "payment action required."
+        ? "complete payment to confirm."
         : "request received.";
 
   const statusCopy =
     detail.booking.status === "confirmed"
-      ? "Your trip is confirmed. We will keep the customer and operator updated as the travel day approaches."
+      ? "Your transportation is booked. We’ll keep you and your driver updated as the travel date approaches."
       : detail.booking.status === "payment_action_required"
-        ? "Your trip is almost ready. Complete the payment step below so we can finalize the confirmation."
-        : "We’re coordinating your trip now. Most requests are matched within a few hours, and confirmation is typically same day.";
+        ? "Almost there—finish payment below so we can lock in your vehicle and driver."
+        : "Transportation partners are reviewing your trip. Most requests hear back within a few hours; confirmation is often same day.";
 
   const stages = [
-    { label: "Request received", active: true },
+    { label: "Request sent", active: true },
     {
-      label: "Matching",
+      label: "Partner matching",
       active: ["operator_offer_open", "operator_accepted", "payment_processing", "payment_action_required", "confirmed"].includes(detail.booking.status)
     },
     {
-      label: "Confirmed",
+      label: "Booked",
       active: ["confirmed"].includes(detail.booking.status)
     }
   ];
@@ -60,13 +60,13 @@ export default async function BookingPage({
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Tracking your request"
+        eyebrow="Booking status"
         title={statusHeadline}
         description={statusCopy}
         meta={
           <div className="flex flex-wrap gap-3">
             <Badge variant="neutral">Request ID: {detail.booking.id}</Badge>
-            <Badge variant="blue">Trip status</Badge>
+            <Badge variant="blue">Live status</Badge>
           </div>
         }
       >
@@ -76,7 +76,7 @@ export default async function BookingPage({
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="bg-[#F6F8FA]">
           <CardHeader>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Live trip status</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Trip progress</p>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               {stages.map((stage) => (
                 <div
@@ -96,11 +96,11 @@ export default async function BookingPage({
                 {detail.booking.pickupLocation.city}, {detail.booking.pickupLocation.state} to {detail.booking.dropoffLocation.city},{" "}
                 {detail.booking.dropoffLocation.state}
               </p>
-              <p className="mt-2 text-sm text-copy-muted">No charge until confirmed. Vetted operators only.</p>
+              <p className="mt-2 text-sm text-copy-muted">Pay only after confirmation. Verified transportation partners.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <Summary label="Trip value" value={formatCurrency(detail.booking.activeAmount)} />
+              <Summary label="Trip total" value={formatCurrency(detail.booking.activeAmount)} />
               <Summary label="Vehicle" value={detail.booking.vehicleCategory.toUpperCase()} />
               <Summary label="Passengers" value={`${detail.booking.passengers}`} />
             </div>
@@ -119,19 +119,18 @@ export default async function BookingPage({
 
             {detail.booking.reviewTriggers.length > 0 ? (
               <div className="rounded-xl border border-line bg-white p-4 text-sm text-copy">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Concierge review</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Manual review</p>
                 <p className="mt-2">
-                  This request is receiving extra coordination because of:{" "}
+                  Our team is coordinating this trip because of:{" "}
                   {detail.booking.reviewTriggers.join(", ").replaceAll("_", " ")}.
                 </p>
               </div>
             ) : null}
 
             <div className="rounded-xl border border-line bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">What you can do now</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Next steps</p>
               <p className="mt-2 text-sm leading-6 text-copy">
-                We’ll email every major update. If this request needs approval or payment recovery, the secure action
-                buttons below will stay available.
+                We email you at every major step. If a revised price or payment is needed, use the secure actions below.
               </p>
               <div className="mt-4">
                 <BookingCustomerActions
@@ -148,7 +147,7 @@ export default async function BookingPage({
         <div className="space-y-6">
           <Card className="bg-[#F6F8FA]">
             <CardHeader>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Request timeline</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Activity</p>
             </CardHeader>
             <CardContent className="space-y-4">
               {detail.paymentAttempts.map((attempt) => (
@@ -161,8 +160,8 @@ export default async function BookingPage({
               {detail.offers.map((offer) => (
                 <TimelineItem
                   key={offer.id}
-                  title={`Operator ${offer.status.replace(/_/g, " ")}`}
-                  copy={`Offer expires ${offer.expiresAt.slice(0, 16).replace("T", " ")}`}
+                  title={`Partner ${offer.status.replace(/_/g, " ")}`}
+                  copy={`Response window ${offer.expiresAt.slice(0, 16).replace("T", " ")}`}
                 />
               ))}
             </CardContent>
@@ -171,7 +170,7 @@ export default async function BookingPage({
           <Card className="bg-[#F6F8FA]">
             <CardHeader>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Customer</p>
-              <CardTitle className="mt-3 text-xl">{detail.customer?.name ?? "Guest customer"}</CardTitle>
+              <CardTitle className="mt-3 text-xl">{detail.customer?.name ?? "Lead traveler"}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-copy">{detail.customer?.email}</p>

@@ -29,7 +29,7 @@ export function OperatorOfferActions({ offerId, disabled }: { offerId: string; d
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
         <Button disabled={disabled || isPending} onClick={() => runAction("accept")}>
-          Accept
+          Accept trip
         </Button>
         <Button disabled={disabled || isPending} onClick={() => runAction("decline")} variant="secondary">
           Decline

@@ -14,10 +14,10 @@ import type { QuoteResult, TripIntent, TripRequestInput, VehicleCategory } from 
 import { formatCurrency, formatNumber } from "@/lib/utils";
 
 const SUGGESTIONS = [
-  "Charlotte Douglas Airport, Charlotte, NC",
-  "Uptown Hotel, Charlotte, NC",
-  "Bank of America Stadium, Charlotte, NC",
-  "Charlotte Convention Center, Charlotte, NC"
+  "Regional airport terminal, City, ST",
+  "Wedding venue or resort, City, ST",
+  "Sports complex or tournament center, City, ST",
+  "Convention center or corporate campus, City, ST"
 ];
 
 const futureDate = (hours: number) => {
@@ -48,8 +48,8 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
   const [multiDay, setMultiDay] = useState<boolean | null>(null);
   const [needsReturnTrip, setNeedsReturnTrip] = useState<boolean | null>(null);
   const [planningHelp, setPlanningHelp] = useState<boolean | null>(null);
-  const [destinationText, setDestinationText] = useState(initialDestination || "Charlotte Douglas Airport, Charlotte, NC");
-  const [pickupText, setPickupText] = useState("500 S Tryon St, Charlotte, NC");
+  const [destinationText, setDestinationText] = useState(initialDestination || "Wedding venue or event space, City, ST");
+  const [pickupText, setPickupText] = useState("Hotel or team hotel, City, ST");
   const [pickupDateTime, setPickupDateTime] = useState(futureDate(30));
   const [passengers, setPassengers] = useState(10);
   const [quote, setQuote] = useState<QuoteResult | null>(null);
@@ -92,16 +92,16 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
   );
 
   const titles: Record<ScreenKey, string> = {
-    intent: "What kind of trip are you planning?",
-    airportArrival: "Are you arriving by flight?",
-    airportFlight: "Add your flight details",
-    teamMultiDay: "Is this a multi-day trip?",
-    teamReturn: "Do you need a return trip?",
-    planning: "Do you need help planning the full trip?",
-    destination: "Where is your group going?",
-    details: "When and where should we pick everyone up?",
-    vehicle: conciergeTrip ? "Here is the best starting point" : "Choose your ride",
-    checkout: "Who should we contact for this trip?"
+    intent: "What kind of group trip is this?",
+    airportArrival: "Flying in for this trip?",
+    airportFlight: "Flight details (optional)",
+    teamMultiDay: "Multi-day travel?",
+    teamReturn: "Need a return ride?",
+    planning: "Want help planning stops and timing?",
+    destination: "Where is the group headed?",
+    details: "Pickup time, location, and headcount",
+    vehicle: conciergeTrip ? "Recommended vehicle to start" : "Choose a vehicle category",
+    checkout: "Primary contact for this booking"
   };
 
   const buildPayload = (vehicleCategory?: VehicleCategory): TripRequestInput => ({
@@ -226,11 +226,11 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
           {currentScreen === "intent" ? (
             <ChoiceScreen
               options={[
-                { label: "Airport trip", value: "airport" },
-                { label: "Event or wedding", value: "event" },
-                { label: "Team or sports", value: "team" },
-                { label: "Corporate", value: "corporate" },
-                { label: "Other", value: "other" }
+                { label: "Airport transfer", value: "airport" },
+                { label: "Wedding or private event", value: "event" },
+                { label: "Sports or AAU travel", value: "team" },
+                { label: "Corporate or church / school", value: "corporate" },
+                { label: "Nightlife, concert, or other", value: "other" }
               ]}
               onSelect={(value) => handleIntentSelect(value as TripIntent)}
             />
@@ -251,7 +251,7 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
 
           {currentScreen === "airportFlight" ? (
             <SingleQuestionScreen
-              description="We use this to keep the pickup aligned with the arrival."
+              description="Helps us time your pickup with baggage claim and arrivals."
               content={
                 <div className="grid gap-4 md:grid-cols-2">
                   <Label>
@@ -301,8 +301,8 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
           {currentScreen === "planning" ? (
             <ChoiceScreen
               options={[
-                { label: "Yes, help me plan everything", value: "yes" },
-                { label: "No, just transportation", value: "no" }
+                { label: "Yes—help me plan the full route", value: "yes" },
+                { label: "No—just the vehicle", value: "no" }
               ]}
               onSelect={(value) => handlePlanningHelp(value === "yes")}
             />
@@ -310,13 +310,13 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
 
           {currentScreen === "destination" ? (
             <SingleQuestionScreen
-              description="Start with the final destination. We will guide the rest."
+              description="Start with the venue, hotel, or final stop—we’ll build the route from there."
               content={
                 <>
                   <Input
                     list="groupride-destinations"
                     className="h-14 text-base"
-                    placeholder="Where is your group going?"
+                    placeholder="Final destination or venue"
                     value={destinationText}
                     onChange={(event) => setDestinationText(event.target.value)}
                   />
@@ -332,7 +332,7 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
 
           {currentScreen === "details" ? (
             <SingleQuestionScreen
-              description="Give us the pickup spot, ride time, and group size."
+              description="Pickup address, departure time, and how many people are riding."
               content={
                 <div className="grid gap-4 md:grid-cols-2">
                   <Label className="md:col-span-2">
@@ -340,7 +340,7 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
                     <Input
                       list="groupride-destinations"
                       className="mt-2"
-                      placeholder="Where should we pick everyone up?"
+                      placeholder="Pickup address or staging area"
                       value={pickupText}
                       onChange={(event) => setPickupText(event.target.value)}
                     />
@@ -355,12 +355,12 @@ export function BookingPlanner({ initialDestination = "" }: { initialDestination
                     />
                   </Label>
                   <div>
-                    <p className="text-sm font-medium text-copy">Group size</p>
+                    <p className="text-sm font-medium text-copy">Passengers</p>
                     <div className="mt-2 flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3">
                       <button type="button" className="text-xl font-semibold text-copy-muted" onClick={() => setPassengers(Math.max(1, passengers - 1))}>
                         -
                       </button>
-                      <span className="text-base font-semibold text-ink">{passengers} riders</span>
+                      <span className="text-base font-semibold text-ink">{passengers} passengers</span>
                       <button type="button" className="text-xl font-semibold text-copy-muted" onClick={() => setPassengers(Math.min(100, passengers + 1))}>
                         +
                       </button>
@@ -480,13 +480,13 @@ function ProgressHeader({ currentStep, totalSteps, title }: { currentStep: numbe
     <div className="space-y-4">
       <div className="flex items-center justify-between text-sm font-medium text-copy-muted">
         <span>Step {currentStep} of {totalSteps}</span>
-        <span>Queue: active</span>
+        <span>Estimates update live</span>
       </div>
       <div className="h-2 rounded-full bg-[#E5E7EB]">
         <div className="h-2 rounded-full bg-accent transition-all" style={{ width: `${(currentStep / totalSteps) * 100}%` }} />
       </div>
       <div>
-        <Badge variant="neutral">System: guided booking</Badge>
+        <Badge variant="neutral">Guided booking</Badge>
         <h1 className="mt-4 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">{title}</h1>
       </div>
     </div>
@@ -550,8 +550,8 @@ function VehicleStep({
     <div className="space-y-5">
       <p className="text-lg leading-7 text-copy">
         {conciergeTrip
-          ? "We have picked a strong transportation starting point while our team reviews the wider trip plan."
-          : "Here are the strongest transportation options for this trip."}
+          ? "We’ve selected a starting vehicle category while our team reviews your full itinerary."
+          : "Compare vehicle categories for your group. Pricing includes estimated distance and platform fee."}
       </p>
 
       <div className="grid gap-4">
@@ -579,7 +579,7 @@ function VehicleStep({
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-semibold">{formatCurrency(choice.amount)}</p>
-                  <p className={`mt-2 text-sm ${isSelected ? "text-white/85" : "text-copy-muted"}`}>Transparent pricing</p>
+                  <p className={`mt-2 text-sm ${isSelected ? "text-white/85" : "text-copy-muted"}`}>Estimated total</p>
                 </div>
               </div>
             </button>
@@ -599,9 +599,9 @@ function VehicleStep({
       {showBreakdown ? (
         <div className="rounded-xl border border-line bg-white p-5">
           <div className="grid gap-3 md:grid-cols-3">
-            <BreakdownRow label="Base price" value={formatCurrency(quote.baseFare)} />
+            <BreakdownRow label="Base fare" value={formatCurrency(quote.baseFare)} />
             <BreakdownRow label="Distance" value={formatCurrency(quote.perMileCharge)} />
-            <BreakdownRow label="Service fee" value={formatCurrency(quote.serviceFee)} />
+            <BreakdownRow label="Platform fee" value={formatCurrency(quote.serviceFee)} />
           </div>
           <p className="mt-4 text-sm text-copy-muted">
             {formatNumber(quote.route.distanceMiles)} miles • {quote.route.estimatedDurationMinutes} minutes
@@ -649,15 +649,15 @@ function CheckoutStep({
     <div className="space-y-5">
       <div className="rounded-xl border border-line bg-white p-5">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-copy-muted">
-          {conciergeTrip ? "Planning request" : "Transportation request"}
+          {conciergeTrip ? "Full itinerary request" : "Group transportation request"}
         </p>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xl font-semibold text-ink">{labelForCategory(selectedVehicle ?? quote.recommendedVehicle)}</p>
             <p className="mt-1 text-sm text-copy-muted">
               {conciergeTrip
-                ? "We will review the broader trip details and confirm the transportation plan."
-                : "We only charge your card after a transportation partner accepts."}
+                ? "We’ll review your itinerary and confirm vehicle details with you."
+                : "You pay after a transportation partner accepts your trip."}
             </p>
           </div>
           <p className="text-3xl font-semibold text-ink">{formatCurrency(quote.amount)}</p>
@@ -692,8 +692,8 @@ function CheckoutStep({
       </div>
 
       <div className="rounded-xl border border-line bg-[#F6F8FA] p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Before you send</p>
-        <p className="mt-2 text-sm leading-6 text-copy">No charge until confirmed. Vetted operators only. Most trips are matched within a few hours.</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Before you submit</p>
+        <p className="mt-2 text-sm leading-6 text-copy">No charge until your trip is confirmed. Verified partners only. Most requests get a response within a few hours.</p>
       </div>
     </div>
   );
@@ -709,9 +709,9 @@ function BreakdownRow({ label, value }: { label: string; value: string }) {
 }
 
 function labelForCategory(category: VehicleCategory) {
-  if (category === "suv") return "SUV";
-  if (category === "sprinter") return "Sprinter van";
-  return "Mini bus";
+  if (category === "suv") return "Luxury SUV";
+  if (category === "sprinter") return "Sprinter / shuttle van";
+  return "Mini coach / charter bus";
 }
 
 function textToLocation(value: string, fallbackCity = "Charlotte", fallbackState = "NC") {
@@ -721,7 +721,7 @@ function textToLocation(value: string, fallbackCity = "Charlotte", fallbackState
     .filter(Boolean);
 
   return {
-    addressLine: addressLine || value || "Charlotte pickup",
+    addressLine: addressLine || value || "Pickup location",
     city: city || fallbackCity,
     state: (state || fallbackState).slice(0, 2).toUpperCase(),
     postalCode: ""

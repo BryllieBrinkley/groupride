@@ -18,13 +18,13 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Admin control plane"
-        title="marketplace operations."
-        description="Manual review is a core strength in the early product. This workspace keeps the queue visible, intervention fast, and marketplace quality under control."
+        eyebrow="Platform admin"
+        title="marketplace command center."
+        description="Monitor trips, pricing, and partners. Step in when a booking needs a human—disputes, coverage gaps, or custom quotes."
         meta={
           <div className="flex flex-wrap gap-3">
-            <Badge variant="blue">Queue: active</Badge>
-            <Badge variant="neutral">Est. response: same day</Badge>
+            <Badge variant="blue">Queue open</Badge>
+            <Badge variant="neutral">Same-day response target</Badge>
           </div>
         }
       >
@@ -40,19 +40,19 @@ export default async function AdminPage() {
       </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <SystemStatCard label="Total requests" value={`${metrics.totalRequests}`} />
-        <SystemStatCard label="Pending review" value={`${metrics.pendingReview}`} />
-        <SystemStatCard label="Open offers" value={`${metrics.openOffers}`} />
-        <SystemStatCard label="Gross volume" value={formatCurrency(metrics.grossBookedRevenue)} />
+        <SystemStatCard label="Trip requests" value={`${metrics.totalRequests}`} />
+        <SystemStatCard label="Needs review" value={`${metrics.pendingReview}`} />
+        <SystemStatCard label="Open operator offers" value={`${metrics.openOffers}`} />
+        <SystemStatCard label="Booked volume" value={formatCurrency(metrics.grossBookedRevenue)} />
       </div>
 
       <Card className="bg-[#F6F8FA]">
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">High-attention queue</p>
-            <CardTitle className="mt-4">Bookings that may need intervention</CardTitle>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Priority queue</p>
+            <CardTitle className="mt-4">Trips that may need a human</CardTitle>
             <p className="mt-3 text-sm leading-6 text-copy-muted">
-              These requests are where pricing overrides, no-supply fallback, and concierge handling matter most.
+              Custom quotes, coverage gaps, large groups, and edge cases show up here first.
             </p>
           </div>
           <Link href="/admin/bookings" className="inline-flex rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-[#F9FAFB]">

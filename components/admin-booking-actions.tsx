@@ -62,30 +62,30 @@ export function AdminBookingActions({ bookingId }: { bookingId: string }) {
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <Button disabled={isPending} onClick={() => runReviewAction("route_offers")}>
-          Route offers
+          Send to operators
         </Button>
         <Button disabled={isPending} variant="secondary" onClick={() => runReviewAction("mark_no_supply")}>
-          Mark no supply
+          No vehicles available
         </Button>
         <Button disabled={isPending} variant="secondary" onClick={() => runReviewAction("close_unfulfilled")}>
-          Close request
+          Close as unfulfilled
         </Button>
       </div>
 
       <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
         <Input
           type="number"
-          placeholder="Override amount"
+          placeholder="New trip total ($)"
           value={price}
           onChange={(event) => setPrice(event.target.value)}
         />
         <Input
-          placeholder="Reason for the revised quote"
+          placeholder="Why the price changed (customer sees this)"
           value={reason}
           onChange={(event) => setReason(event.target.value)}
         />
         <Button disabled={isPending} variant="secondary" className="h-12" onClick={runPriceOverride}>
-          Request approval
+          Send to customer
         </Button>
       </div>
 

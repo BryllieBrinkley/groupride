@@ -39,9 +39,9 @@ export function LoginForm() {
   return (
     <Card className="bg-[#F6F8FA]">
       <CardHeader>
-        <Badge variant="neutral">Internal access</Badge>
-        <CardTitle className="mt-5 text-3xl">Sign in to GroupRide</CardTitle>
-        <p className="mt-3 text-sm leading-6 text-copy-muted">Use demo credentials to explore operator and admin workflows.</p>
+        <Badge variant="neutral">Partner & admin sign-in</Badge>
+        <CardTitle className="mt-5 text-3xl">Welcome back</CardTitle>
+        <p className="mt-3 text-sm leading-6 text-copy-muted">Sign in to manage trips as a transportation partner or platform admin. Demo accounts below.</p>
       </CardHeader>
       <CardContent>
       <form onSubmit={onSubmit} className="space-y-5">
@@ -68,9 +68,9 @@ export function LoginForm() {
       </Button>
 
       <div className="rounded-xl border border-line bg-white p-4 text-sm text-copy">
-        <p className="font-semibold text-ink">Demo accounts</p>
-        <p className="mt-2">Admin: `admin@groupride.app` / `Admin123!`</p>
-        <p>Operator: `ops@charlottemobility.com` / `Operator123!`</p>
+        <p className="font-semibold text-ink">Sample logins</p>
+        <p className="mt-2">Platform admin: `admin@groupride.app` / `Admin123!`</p>
+        <p>Transportation partner: `ops@charlottemobility.com` / `Operator123!`</p>
       </div>
     </form>
     </CardContent>

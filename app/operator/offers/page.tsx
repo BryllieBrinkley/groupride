@@ -15,13 +15,13 @@ export default async function OperatorOffersPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Offer inbox"
-        title="operator reviewing."
-        description="This queue is designed for quick decisions. Each card gives the essentials: route, trip value, urgency, and the current status."
+        eyebrow="Open offers"
+        title="review & respond."
+        description="Each card shows route, group size, trip value, and status—accept when it fits your fleet and schedule."
         meta={
           <div className="flex flex-wrap gap-3">
-            <Badge variant="neutral">Verified operator</Badge>
-            <Badge variant="blue">Queue: active</Badge>
+            <Badge variant="neutral">Verified partner</Badge>
+            <Badge variant="blue">Active queue</Badge>
           </div>
         }
       >

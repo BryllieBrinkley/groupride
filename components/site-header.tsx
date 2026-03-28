@@ -14,8 +14,8 @@ export async function SiteHeader() {
           GROUPRIDE
         </Link>
         <nav className="hidden gap-5 text-sm font-medium text-copy-muted md:flex">
-          <Link href="/book">Book</Link>
-          <Link href="/booking/booking_offer_demo">Track request</Link>
+          <Link href="/book">Book a trip</Link>
+          <Link href="/booking/booking_offer_demo">Track booking</Link>
           {user?.role === "operator" ? <Link href="/operator">Operator</Link> : null}
           {user?.role === "admin" ? <Link href="/admin">Admin</Link> : null}
           {user?.role === "customer" ? <Link href="/account">My Trips</Link> : null}
@@ -24,7 +24,7 @@ export async function SiteHeader() {
 
       <div className="flex items-center gap-3 text-sm">
         <div className="hidden lg:block">
-          <Badge variant="blue">System: active</Badge>
+          <Badge variant="blue">Marketplace live</Badge>
         </div>
         {user ? (
           <>

@@ -1,15 +1,16 @@
 # GroupRide
 
-Web-first operations-heavy MVP for nationwide group transportation booking.
+Marketplace platform for **large-group transportation** (sprinters, charter and party buses, minibuses, shuttles, event transport). Customers submit trips; **operators** review, accept, or quote; customers confirm; **Stripe** captures payment; GroupRide takes a **marketplace fee**.
+
+**Product scope (authoritative):** [`docs/product-scope.md`](docs/product-scope.md) · **Engineering handoff:** [`docs/ai-handoff.md`](docs/ai-handoff.md)
 
 ## Stack
 
-- Next.js App Router
-- TypeScript + Tailwind CSS
-- Supabase-ready data/auth adapters with demo-mode fallbacks
-- Stripe-ready payment orchestration with demo payment adapter
-- Google Maps-ready routing adapter with local mileage estimator fallback
-- Vitest for service-level tests
+- Next.js App Router (TypeScript, Tailwind CSS)
+- Target: **Supabase** (auth, database, storage, realtime) with **RLS** — current demo uses in-memory store; see docs
+- **Stripe** (Checkout / Payment Intents target) with demo fallback
+- **Google Maps Platform** for geocoding/routing when configured; local estimator fallback
+- Zod validation · Vitest for service-level tests
 
 ## Quick Start
 

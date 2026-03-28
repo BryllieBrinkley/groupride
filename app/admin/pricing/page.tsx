@@ -12,13 +12,13 @@ export default async function AdminPricingPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Pricing controls"
-        title="quote defaults."
-        description="These deterministic rules create fast first-pass pricing. Ops can still override pricing later when a trip needs manual coordination."
+        eyebrow="Pricing & fees"
+        title="instant estimates."
+        description="Baseline fares by vehicle category—sprinters, coaches, and SUVs. Admins can still send a custom quote when a trip needs manual pricing."
         meta={
           <div className="flex flex-wrap gap-3">
-            <Badge variant="blue">Pricing: deterministic</Badge>
-            <Badge variant="neutral">Overrides: enabled</Badge>
+            <Badge variant="blue">Automated estimates</Badge>
+            <Badge variant="neutral">Manual overrides OK</Badge>
           </div>
         }
       >

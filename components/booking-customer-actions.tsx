@@ -45,7 +45,7 @@ export function BookingCustomerActions({
       <div className="flex flex-wrap gap-3">
         {canCancel ? (
           <Button disabled={isPending} variant="secondary" onClick={() => run(`/api/bookings/${bookingId}/cancel`)}>
-            Cancel booking
+            Cancel trip
           </Button>
         ) : null}
         {approvalToken ? (
@@ -53,7 +53,7 @@ export function BookingCustomerActions({
             disabled={isPending}
             onClick={() => run(`/api/bookings/${bookingId}/approve-revision`, { token: approvalToken })}
           >
-            Approve revised quote
+            Approve updated price
           </Button>
         ) : null}
         {recoveryToken ? (
