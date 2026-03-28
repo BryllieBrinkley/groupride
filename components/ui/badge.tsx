@@ -1,35 +1,46 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils'
 
-type BadgeVariant = "neutral" | "blue" | "success" | "warning";
+const badgeVariants = cva(
+  'inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden',
+  {
+    variants: {
+      variant: {
+        default:
+          'border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
+        secondary:
+          'border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90',
+        destructive:
+          'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+        outline:
+          'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  },
+)
 
-const VARIANT_STYLES: Record<BadgeVariant, string> = {
-  neutral: "bg-[#EEF2F7] text-[#465468]",
-  blue: "bg-[#E8F1FE] text-[#0B1F3A]",
-  success: "bg-[#DCFCE7] text-[#166534]",
-  warning: "bg-[#FEF3C7] text-[#92400E]"
-};
-
-export function Badge({
+function Badge({
   className,
-  variant = "neutral",
-  children,
+  variant,
+  asChild = false,
   ...props
-}: HTMLAttributes<HTMLSpanElement> & {
-  variant?: BadgeVariant;
-  children: ReactNode;
-}) {
+}: React.ComponentProps<'span'> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot : 'span'
+
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
-        VARIANT_STYLES[variant],
-        className
-      )}
+    <Comp
+      data-slot="badge"
+      className={cn(badgeVariants({ variant }), className)}
       {...props}
-    >
-      {children}
-    </span>
-  );
+    />
+  )
 }
+
+export { Badge, badgeVariants }
