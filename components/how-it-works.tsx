@@ -1,11 +1,20 @@
 export function HowItWorks() {
   const steps = [
+<<<<<<< HEAD
     { number: "01", title: "share your route, date, and group size"},
     { number: "02", title: "we match the best ride"},
     { number: "03", title: "book and pay securely through GroupRide"},
   ]
 
 return (
+=======
+    { number: "01", title: "tell us your trip" },
+    { number: "02", title: "we match the best ride" },
+    { number: "03", title: "you're confirmed" },
+  ]
+
+  return (
+>>>>>>> eef1629a709651ba42f4420f4b50786451417562
     <section id="how-it-works" className="py-24 px-6 lg:px-12 border-t border-border">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-xs text-muted-foreground mb-16 lowercase">

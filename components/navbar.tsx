@@ -17,12 +17,15 @@ export function Navbar() {
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           <Link 
+<<<<<<< HEAD
             href="/" 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
             book a ride
           </Link>
           <Link 
+=======
+>>>>>>> eef1629a709651ba42f4420f4b50786451417562
             href="#how-it-works" 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
@@ -32,7 +35,11 @@ export function Navbar() {
             href="/operators" 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
+<<<<<<< HEAD
             become an operator
+=======
+            for operators
+>>>>>>> eef1629a709651ba42f4420f4b50786451417562
           </Link>
           <Link 
             href="/login" 
@@ -55,6 +62,7 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border px-6 py-6 space-y-4">
           <Link 
+<<<<<<< HEAD
             href="/" 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
@@ -68,6 +76,8 @@ export function Navbar() {
             become an operator
           </Link>
           <Link 
+=======
+>>>>>>> eef1629a709651ba42f4420f4b50786451417562
             href="#how-it-works" 
             className="block text-sm text-muted-foreground lowercase"
             onClick={() => setMobileMenuOpen(false)}
@@ -75,6 +85,16 @@ export function Navbar() {
             how it works
           </Link>
           <Link 
+<<<<<<< HEAD
+=======
+            href="/operators" 
+            className="block text-sm text-muted-foreground lowercase"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            for operators
+          </Link>
+          <Link 
+>>>>>>> eef1629a709651ba42f4420f4b50786451417562
             href="/login" 
             className="block text-sm text-foreground lowercase"
             onClick={() => setMobileMenuOpen(false)}
