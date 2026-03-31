@@ -13,89 +13,76 @@ export function Navbar() {
         <Link href="/" className="text-lg tracking-tight text-foreground lowercase">
           groupride
         </Link>
-        
+
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          <Link 
-<<<<<<< HEAD
-            href="/" 
+          <Link
+            href="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
             book a ride
           </Link>
-          <Link 
-=======
->>>>>>> eef1629a709651ba42f4420f4b50786451417562
-            href="#how-it-works" 
+
+          <Link
+            href="#how-it-works"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
             how it works
           </Link>
-          <Link 
-            href="/operators" 
+
+          <Link
+            href="/operators"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
-<<<<<<< HEAD
             become an operator
-=======
-            for operators
->>>>>>> eef1629a709651ba42f4420f4b50786451417562
           </Link>
-          <Link 
-            href="/login" 
+
+          <Link
+            href="/login"
             className="text-sm text-foreground lowercase"
           >
             login
           </Link>
         </div>
-        
+
         {/* Mobile Menu Button */}
-        <button 
+        <button
           className="md:hidden text-foreground"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </nav>
-      
+
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border px-6 py-6 space-y-4">
-          <Link 
-<<<<<<< HEAD
-            href="/" 
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
+          <Link
+            href="/"
+            className="block text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
+            onClick={() => setMobileMenuOpen(false)}
           >
             book a ride
           </Link>
-                    <Link 
-            href="/operators" 
-            className="block text-sm text-muted-foreground lowercase"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            become an operator
-          </Link>
-          <Link 
-=======
->>>>>>> eef1629a709651ba42f4420f4b50786451417562
-            href="#how-it-works" 
+
+          <Link
+            href="#how-it-works"
             className="block text-sm text-muted-foreground lowercase"
             onClick={() => setMobileMenuOpen(false)}
           >
             how it works
           </Link>
-          <Link 
-<<<<<<< HEAD
-=======
-            href="/operators" 
+
+          <Link
+            href="/operators"
             className="block text-sm text-muted-foreground lowercase"
             onClick={() => setMobileMenuOpen(false)}
           >
-            for operators
+            become an operator
           </Link>
-          <Link 
->>>>>>> eef1629a709651ba42f4420f4b50786451417562
-            href="/login" 
+
+          <Link
+            href="/login"
             className="block text-sm text-foreground lowercase"
             onClick={() => setMobileMenuOpen(false)}
           >
