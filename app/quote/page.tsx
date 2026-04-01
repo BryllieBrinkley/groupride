@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation"
 import { Suspense } from "react"
-import { Navbar } from "@/components/navbar"
+import Navbar from "@/components/navbar"
 import { ArrowRight } from "lucide-react"
 
 interface Vehicle {
@@ -78,17 +78,19 @@ function QuoteContent() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#f7f4ef]">
       <Navbar />
-      
-      <div className="pt-32 pb-20 px-6 lg:px-12">
-        <div className="max-w-md mx-auto">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-2xl font-normal text-foreground lowercase mb-3">
+      <div className="pt-32 pb-20 px-4 lg:px-0 flex justify-center">
+        <div className="w-full max-w-md">
+          <div className="rounded-[32px] border border-[#e7dfd3] bg-white p-10 shadow-[0_30px_80px_rgba(0,0,0,0.08)]">
+            {/* Header */}
+            <div className="mb-8 text-center text-xs text-black/45">
+              Step 1 of 2 · Get your quote
+            </div>
+            <h1 className="mb-1 text-center text-2xl font-medium text-black lowercase">
               select your ride
             </h1>
-            <p className="text-sm text-muted-foreground lowercase">
+            <p className="mb-8 text-center text-black/50 text-sm">
               {passengers} passengers
               {pickup && dropoff && (
                 <span className="block mt-1">
@@ -96,65 +98,66 @@ function QuoteContent() {
                 </span>
               )}
             </p>
-          </div>
-
-          {/* Vehicle Options */}
-          <div className="space-y-4">
-            {vehicles.map((vehicle) => (
-              <button
-                key={vehicle.id}
-                onClick={() => handleSelect(vehicle)}
-                className={`w-full text-left p-6 rounded-lg border transition-all group ${
-                  vehicle.isBestFit
-                    ? "bg-card border-foreground"
-                    : "bg-card border-border hover:border-foreground/40"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-base font-medium text-foreground lowercase">
-                        {vehicle.name}
-                      </h3>
-                      {vehicle.isBestFit && (
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          recommended
+            {/* Vehicle Options */}
+            <div className="space-y-4">
+              {vehicles.map((vehicle) => (
+                <button
+                  key={vehicle.id}
+                  onClick={() => handleSelect(vehicle)}
+                  className={`w-full text-left p-6 rounded-2xl border transition-all group ${
+                    vehicle.isBestFit
+                      ? "bg-[#f7f4ef] border-[#a68a6d]"
+                      : "bg-[#f7f4ef] border-black/10 hover:border-[#a68a6d]/40"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-base font-medium text-black lowercase">
+                          {vehicle.name}
+                        </h3>
+                        {vehicle.isBestFit && (
+                          <span className="text-[10px] uppercase tracking-[0.12em] text-[#a68a6d] bg-[#f3e9db] rounded-full px-2 py-0.5 font-semibold">
+                            recommended
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-black/50 mt-1 lowercase">
+                        {vehicle.description}
+                      </p>
+                      {vehicle.features && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {vehicle.features.map((feature) => (
+                            <span key={feature} className="inline-flex items-center rounded-full border border-[#e7dfd3] bg-[#f3e9db] px-3 py-1 text-xs font-medium text-[#a68a6d]">
+                              {feature}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-lg font-medium text-black">
+                        {vehicle.price}
+                      </p>
+                      {vehicle.isCustom && (
+                        <span className="text-[10px] uppercase tracking-[0.12em] text-[#a68a6d] bg-[#f3e9db] rounded-full px-2 py-0.5 font-semibold">
+                          custom
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1 lowercase">
-                      {vehicle.description}
-                    </p>
-                    {vehicle.features && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-                        {vehicle.features.map((feature) => (
-                          <span key={feature} className="text-xs text-muted-foreground lowercase flex items-center gap-1.5">
-                            <span className="h-1 w-1 rounded-full bg-muted-foreground/60" />
-                            {feature}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-lg font-medium text-foreground">
-                      {vehicle.price}
-                    </p>
-                    {vehicle.isCustom && (
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                        custom
-                      </span>
-                    )}
+                  <div className="flex items-center justify-end mt-6 text-sm text-black/45 group-hover:text-black transition-colors">
+                    <span className="lowercase">
+                      {vehicle.isCustom ? "request quote" : "select"}
+                    </span>
+                    <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-0.5" />
                   </div>
-                </div>
-                <div className="flex items-center justify-end mt-5 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                  <span className="lowercase">
-                    {vehicle.isCustom ? "request quote" : "select"}
-                  </span>
-                  <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-0.5" />
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
+            <div className="mt-8 text-center text-xs text-black/45">
+              No payment required until you confirm your booking.
+            </div>
           </div>
         </div>
       </div>
