@@ -1,85 +1,97 @@
-import Link from "next/link";
-
-import { AdminBookingActions } from "@/components/admin-booking-actions";
+import { DashboardShell } from "@/components/shared/DashboardShell";
 import { DashboardNav } from "@/components/dashboard-nav";
-import { PageHeader } from "@/components/page-header";
-import { StatusBadge } from "@/components/status-badge";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard } from "@/components/shared/StatCard";
+import { FilterBar } from "@/components/shared/FilterBar";
+import { DataTable } from "@/components/shared/DataTable";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { listAdminBookings } from "@/lib/services/bookings";
 import { formatLocalDateTime } from "@/lib/time";
 import { formatCurrency } from "@/lib/utils";
 
+
 export default async function AdminBookingsPage() {
   await requireRole(["admin"]);
   const bookings = listAdminBookings();
+  const isLoading = false; // Replace with actual loading state if needed
+  // Example KPIs
+  const kpi = {
+    total: bookings.length,
+    pending: bookings.filter((b: any) => b.status === "pending").length,
+    confirmed: bookings.filter((b: any) => b.status === "confirmed").length,
+    cancelled: bookings.filter((b: any) => b.status === "cancelled").length,
+  };
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="Booking queue"
-        title="trip queue."
-        description="Send requests to transportation partners, adjust pricing with customer approval, and close trips that can’t be fulfilled."
-        meta={
-          <div className="flex flex-wrap gap-3">
-            <Badge variant="neutral">Control: pricing + supply</Badge>
-            <Badge variant="blue">Workflow: coordinated</Badge>
-          </div>
-        }
-      >
+    <DashboardShell
+      sidebar={
         <DashboardNav
           currentPath="/admin/bookings"
           items={[
             { href: "/admin", label: "Overview" },
             { href: "/admin/bookings", label: "Bookings" },
             { href: "/admin/operators", label: "Operators" },
-            { href: "/admin/pricing", label: "Pricing" }
+            { href: "/admin/pricing", label: "Pricing" },
           ]}
         />
-      </PageHeader>
-
-      <div className="space-y-4">
-        {bookings.map((booking) => (
-          <Card key={booking.id} className="bg-[#F6F8FA]">
-            <CardContent className="pt-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="max-w-3xl">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <p className="text-xl font-medium text-ink">
-                      {booking.pickupLocation.city}, {booking.pickupLocation.state} to {booking.dropoffLocation.city}, {booking.dropoffLocation.state}
-                    </p>
-                    <StatusBadge status={booking.status} />
-                  </div>
-                  <p className="mt-3 text-sm text-copy">
-                    {formatLocalDateTime(booking.pickupDateTimeUtc, booking.pickupTimezone)} • {booking.passengers} passengers •{" "}
-                    {formatCurrency(booking.activeAmount)}
-                  </p>
-                  {booking.reviewTriggers.length > 0 ? (
-                    <p className="mt-2 text-sm text-copy-muted">
-                      Concierge triggers: {booking.reviewTriggers.join(", ").replaceAll("_", " ")}
-                    </p>
-                  ) : null}
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <Link href={`/booking/${booking.id}`} className="text-sm font-semibold text-[#3B82F6]">
-                      Open customer view
-                    </Link>
-                    {booking.approvalToken ? <Badge variant="warning">Approval token active</Badge> : null}
-                    {booking.paymentRecoveryToken ? <Badge variant="warning">Payment recovery active</Badge> : null}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-xl border border-line bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Operator controls</p>
-                <div className="mt-4">
-                  <AdminBookingActions bookingId={booking.id} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      }
+      header={
+        <PageHeader
+          eyebrow="Booking queue"
+          title="trip queue."
+          description="Send requests to transportation partners, adjust pricing with customer approval, and close trips that can’t be fulfilled."
+          meta={
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="neutral">Control: pricing + supply</Badge>
+              <Badge variant="blue">Workflow: coordinated</Badge>
+            </div>
+          }
+        />
+      }
+    >
+      {/* Stat row */}
+      <div className="grid gap-4 md:grid-cols-4 mb-8">
+        <StatCard label="Total bookings" value={kpi.total} />
+        <StatCard label="Pending" value={kpi.pending} />
+        <StatCard label="Confirmed" value={kpi.confirmed} />
+        <StatCard label="Cancelled" value={kpi.cancelled} />
       </div>
-    </div>
+
+      {/* Filter/search row */}
+      <FilterBar>
+        <input className="input input-bordered w-full max-w-xs" placeholder="Search bookings..." />
+        <select className="select select-bordered">
+          <option>Status</option>
+          <option>Pending</option>
+          <option>Confirmed</option>
+          <option>Cancelled</option>
+        </select>
+        <input type="date" className="input input-bordered" />
+      </FilterBar>
+
+      {/* Table section with loading/empty/data states */}
+      {isLoading ? (
+        <LoadingSkeleton className="h-32 w-full rounded-xl" />
+      ) : bookings.length === 0 ? (
+        <EmptyState title="No bookings found" description="No bookings match your filters." />
+      ) : (
+        <DataTable
+          columns={[
+            { key: "customer", label: "Customer", render: (_: any, row: any) => row.customerName },
+            { key: "route", label: "Route", render: (_: any, row: any) => `${row.pickupLocation.city}, ${row.pickupLocation.state} to ${row.dropoffLocation.city}, ${row.dropoffLocation.state}` },
+            { key: "operator", label: "Operator", render: (_: any, row: any) => row.operatorName },
+            { key: "vehicle", label: "Vehicle", render: (_: any, row: any) => row.vehicleName },
+            { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
+            { key: "activeAmount", label: "Amount", render: (val: any) => formatCurrency(val) },
+            { key: "pickupDateTimeUtc", label: "Date", render: (val: any, row: any) => formatLocalDateTime(val, row.pickupTimezone) },
+          ]}
+          data={bookings}
+        />
+      )}
+    </DashboardShell>
   );
 }

@@ -1,85 +1,101 @@
 import { DashboardNav } from "@/components/dashboard-nav";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/shared/PageHeader";
+
+
+import { DashboardShell } from "@/components/shared/DashboardShell";
+import { StatCard } from "@/components/shared/StatCard";
+import { FilterBar } from "@/components/shared/FilterBar";
+import { DataTable } from "@/components/shared/DataTable";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { listOperators } from "@/lib/services/bookings";
 
 export default async function AdminOperatorsPage() {
   await requireRole(["admin"]);
-  const operators = listOperators();
+  const operators = await listOperators();
+  const isLoading = false; // Replace with actual loading state if needed
+  // Example KPIs
+  const kpi = {
+    active: operators.filter((o: any) => o.status === "active").length,
+    pending: operators.filter((o: any) => o.status === "pending").length,
+    suspended: operators.filter((o: any) => o.status === "suspended").length,
+    fleet: operators.reduce((sum: number, o: any) => sum + (o.vehicles?.length || 0), 0),
+  };
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="Transportation partners"
-        title="operator network."
-        description="See who covers which markets, what they run, and who is ready for weddings, sports travel, and corporate groups."
-        meta={
-          <div className="flex flex-wrap gap-3">
-            <Badge variant="blue">Verified partners</Badge>
-            <Badge variant="neutral">Marketplace dispatch</Badge>
-          </div>
-        }
-      >
+    <DashboardShell
+      sidebar={
         <DashboardNav
           currentPath="/admin/operators"
           items={[
             { href: "/admin", label: "Overview" },
             { href: "/admin/bookings", label: "Bookings" },
             { href: "/admin/operators", label: "Operators" },
-            { href: "/admin/pricing", label: "Pricing" }
+            { href: "/admin/pricing", label: "Pricing" },
           ]}
         />
-      </PageHeader>
-
-      <div className="space-y-4">
-        {operators.map(({ operator, serviceAreas, vehicles }) => (
-          <Card key={operator.id} className="bg-[#F6F8FA]">
-            <CardContent className="pt-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xl font-medium text-ink">{operator.companyName}</p>
-                  <p className="mt-2 text-sm text-copy-muted">
-                    Rating {operator.rating.toFixed(1)} • {operator.status}
-                  </p>
-                </div>
-                <Badge variant="neutral">Verified partner</Badge>
-              </div>
-
-              <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-xl border border-line bg-white p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Service areas</p>
-                  <div className="mt-4 space-y-3">
-                    {serviceAreas.map((area) => (
-                      <div key={area.id} className="rounded-xl border border-line bg-[#F6F8FA] p-4 text-sm text-copy">
-                        <p className="font-medium text-ink">{area.label}</p>
-                        <p className="mt-2">
-                          {area.city}, {area.state} • {area.radiusMiles} mile radius
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-line bg-white p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-copy-muted">Vehicles</p>
-                  <div className="mt-4 space-y-3">
-                    {vehicles.map((vehicle) => (
-                      <div key={vehicle.id} className="rounded-xl border border-line bg-[#F6F8FA] p-4 text-sm text-copy">
-                        <p className="font-medium text-ink">{vehicle.name}</p>
-                        <p className="mt-2">
-                          {vehicle.category.toUpperCase()} • capacity {vehicle.capacity} • qty {vehicle.quantity}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      }
+      header={
+        <PageHeader
+          eyebrow="Transportation partners"
+          title="operator network."
+          description="See who covers which markets, what they run, and who is ready for weddings, sports travel, and corporate groups."
+          meta={
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="blue">Verified partners</Badge>
+              <Badge variant="neutral">Marketplace dispatch</Badge>
+            </div>
+          }
+        />
+      }
+    >
+      {/* Stat row */}
+      <div className="grid gap-4 md:grid-cols-4 mb-8">
+        <StatCard label="Active operators" value={kpi.active} />
+        <StatCard label="Pending approvals" value={kpi.pending} />
+        <StatCard label="Suspended" value={kpi.suspended} />
+        <StatCard label="Total fleet size" value={kpi.fleet} />
       </div>
-    </div>
+
+      {/* Filter/search row */}
+      <FilterBar>
+        <input className="input input-bordered w-full max-w-xs" placeholder="Search operators..." />
+        <select className="select select-bordered">
+          <option>Status</option>
+          <option>Active</option>
+          <option>Pending</option>
+          <option>Suspended</option>
+        </select>
+      </FilterBar>
+
+      {/* Table section with loading/empty/data states */}
+      {isLoading ? (
+        <LoadingSkeleton className="h-32 w-full rounded-xl" />
+      ) : operators.length === 0 ? (
+        <EmptyState title="No operators found" description="No operators match your filters." />
+      ) : (
+        <DataTable
+          columns={[
+            { key: "companyName", label: "Company" },
+            { key: "serviceArea", label: "Service Area", render: (_: any, row: any) => (row.serviceAreas?.map((a: any) => a.label).join(", ") || "-") },
+            { key: "fleetSize", label: "Fleet Size", render: (_: any, row: any) => row.vehicles?.length || 0 },
+            { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
+            { key: "completedRides", label: "Completed Rides" },
+            { key: "rating", label: "Rating", render: (val: any) => val ? val.toFixed(1) : "-" },
+            { key: "actions", label: "Actions", render: (_: any, row: any) => <button className="text-blue-600">View</button> },
+          ]}
+          data={operators.map((o: any) => ({
+            ...o,
+            serviceArea: o.serviceAreas,
+            fleetSize: o.vehicles?.length || 0,
+            completedRides: o.completedRides || 0,
+            actions: "",
+          }))}
+        />
+      )}
+    </DashboardShell>
   );
 }

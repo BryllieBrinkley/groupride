@@ -1,14 +1,27 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
 
-export function Navbar() {
+export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+        scrolled ? 'bg-white/80 backdrop-blur border-b border-border shadow-sm' : 'bg-transparent'
+      }`}
+    >
       <nav className="flex items-center justify-between px-6 py-5 lg:px-12">
         <Link href="/" className="text-lg tracking-tight text-foreground lowercase">
           groupride
@@ -31,7 +44,7 @@ export function Navbar() {
           </Link>
 
           <Link
-            href="/operators"
+            href="/become-an-operator"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
           >
             become an operator

@@ -1,32 +1,24 @@
 export function HowItWorks() {
   const steps = [
-    { number: "01", title: "share your route, date, and group size" },
-    { number: "02", title: "we match the best ride" },
-    { number: "03", title: "book and pay securely through GroupRide" },
+    { number: "01", title: "share your route, date, and group size"},
+    { number: "02", title: "we match the best ride"},
+    { number: "03", title: "book and pay securely through GroupRide"},
   ]
 
-  return (
-    <section id="how-it-works" className="px-6 py-24 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-16 max-w-2xl">
-          <p className="mb-4 text-sm lowercase text-muted-foreground">
-            how it works
-          </p>
-          <h2 className="text-4xl tracking-tight text-foreground lowercase md:text-5xl">
-            simple group transportation, handled for you
-          </h2>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-3">
+return (
+    <section id="how-it-works" className="py-24 px-6 lg:px-12 border-t border-border">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-xs text-muted-foreground mb-16 lowercase">
+          how it works
+        </h2>
+        
+        <div className="space-y-12">
           {steps.map((step) => (
-            <div
-              key={step.number}
-              className="rounded-3xl border border-border bg-background p-8"
-            >
-              <p className="mb-8 text-sm text-muted-foreground">
+            <div key={step.number} className="flex items-baseline gap-8">
+              <span className="text-xs text-muted-foreground/50 font-mono">
                 {step.number}
-              </p>
-              <h3 className="text-xl lowercase text-foreground">
+              </span>
+              <h3 className="text-2xl sm:text-3xl text-foreground lowercase">
                 {step.title}
               </h3>
             </div>

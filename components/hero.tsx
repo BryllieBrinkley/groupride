@@ -113,25 +113,35 @@ export function Hero() {
               </div>
             </div>
 
-            <div className="mt-12 flex items-center gap-8 text-sm lowercase text-black/45">
-              <div>
-                <p className="text-2xl font-medium text-black">6–100+</p>
-                <p>passengers</p>
+            <div className="mt-12 flex flex-col gap-8">
+              <div className="flex items-center gap-8 text-sm lowercase text-black/45">
+                <div>
+                  <p className="text-2xl font-medium text-black">6–100+</p>
+                  <p>passengers</p>
+                </div>
+
+                <div className="h-10 w-px bg-black/10" />
+
+                <div>
+                  <p className="text-2xl font-medium text-black">24/7</p>
+                  <p>availability</p>
+                </div>
+
+                <div className="h-10 w-px bg-black/10" />
+
+                <div>
+                  <p className="text-2xl font-medium text-black">0</p>
+                  <p>upfront charge</p>
+                </div>
               </div>
-
-              <div className="h-10 w-px bg-black/10" />
-
-              <div>
-                <p className="text-2xl font-medium text-black">24/7</p>
-                <p>availability</p>
-              </div>
-
-              <div className="h-10 w-px bg-black/10" />
-
-              <div>
-                <p className="text-2xl font-medium text-black">0</p>
-                <p>upfront charge</p>
-              </div>
+              <a
+                href="/become-an-operator"
+                id="become-operator-cta"
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#2d211b] px-8 py-4 text-lg font-semibold lowercase text-white transition hover:bg-black shadow-lg"
+              >
+                become an operator
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </a>
             </div>
           </div>
         </div>

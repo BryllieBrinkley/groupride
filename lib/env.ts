@@ -8,7 +8,7 @@ const env = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-  googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+  googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
   resendApiKey: process.env.RESEND_API_KEY,
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "ops@groupride.app",
   sessionCookieSecret: process.env.SESSION_COOKIE_SECRET ?? "development-only-secret"
