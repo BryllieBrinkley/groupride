@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
 import { listOperators } from "@/lib/services/bookings";
 
@@ -41,18 +42,17 @@ export default async function AdminOperatorsPage() {
       header={
         <PageHeader
           eyebrow="Transportation partners"
-          title="operator network."
+          title="Operator network"
           description="See who covers which markets, what they run, and who is ready for weddings, sports travel, and corporate groups."
           meta={
-            <div className="flex flex-wrap gap-3">
+            <>
               <Badge variant="blue">Verified partners</Badge>
               <Badge variant="neutral">Marketplace dispatch</Badge>
-            </div>
+            </>
           }
         />
       }
     >
-      {/* Stat row */}
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <StatCard label="Active operators" value={kpi.active} />
         <StatCard label="Pending approvals" value={kpi.pending} />
@@ -60,10 +60,9 @@ export default async function AdminOperatorsPage() {
         <StatCard label="Total fleet size" value={kpi.fleet} />
       </div>
 
-      {/* Filter/search row */}
       <FilterBar>
-        <input className="input input-bordered w-full max-w-xs" placeholder="Search operators..." />
-        <select className="select select-bordered">
+        <Input className="max-w-sm bg-background" placeholder="Search operators..." />
+        <select className="h-12 rounded-2xl border border-border bg-background px-4 text-sm text-foreground outline-none">
           <option>Status</option>
           <option>Active</option>
           <option>Pending</option>
@@ -71,9 +70,8 @@ export default async function AdminOperatorsPage() {
         </select>
       </FilterBar>
 
-      {/* Table section with loading/empty/data states */}
       {isLoading ? (
-        <LoadingSkeleton className="h-32 w-full rounded-xl" />
+        <LoadingSkeleton />
       ) : operators.length === 0 ? (
         <EmptyState title="No operators found" description="No operators match your filters." />
       ) : (
@@ -85,7 +83,7 @@ export default async function AdminOperatorsPage() {
             { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
             { key: "completedRides", label: "Completed Rides" },
             { key: "rating", label: "Rating", render: (val: any) => val ? val.toFixed(1) : "-" },
-            { key: "actions", label: "Actions", render: (_: any, row: any) => <button className="text-blue-600">View</button> },
+            { key: "actions", label: "Actions", render: () => <span className="text-muted-foreground">View</span> },
           ]}
           data={operators.map((o: any) => ({
             ...o,

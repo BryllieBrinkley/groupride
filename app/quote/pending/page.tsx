@@ -2,60 +2,50 @@
 
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/footer"
 import { Check, ArrowRight } from "lucide-react"
+import { SectionEyebrow } from "@/components/shared/SectionEyebrow"
+import { Button } from "@/components/ui/button"
 
 export default function PendingReviewPage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pt-24">
       <Navbar />
-      
-      <div className="pt-32 pb-20 px-6 lg:px-12">
-        <div className="max-w-lg mx-auto">
-          {/* Success indicator */}
-          <div className="flex justify-center mb-10">
-            <div className="h-16 w-16 rounded-full bg-card border border-border flex items-center justify-center">
+      <section className="page-shell py-16 md:py-20">
+        <div className="mx-auto max-w-3xl premium-panel p-8 md:p-10">
+          <div className="flex justify-center">
+            <div className="flex size-16 items-center justify-center rounded-full border border-border bg-background">
               <Check className="h-6 w-6 text-foreground" strokeWidth={2} />
             </div>
           </div>
 
-          {/* Main heading */}
-          <div className="text-center mb-16">
-            <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-foreground mb-4 lowercase">
-              request submitted
+          <div className="mt-8 text-center">
+            <SectionEyebrow className="justify-center">Request submitted</SectionEyebrow>
+            <h1 className="mt-5 text-4xl font-medium tracking-[-0.05em] text-foreground sm:text-5xl">
+              We&apos;re matching your trip now.
             </h1>
-            <p className="text-base text-muted-foreground lowercase">
-              we're matching you with a provider
+            <p className="mt-4 text-base leading-7 text-muted-foreground">
+              A GroupRide specialist is reviewing operator availability and building the cleanest option for your group.
             </p>
           </div>
 
-          {/* Time estimate */}
-          <div className="text-center mb-16">
-            <p className="text-xs text-muted-foreground mb-3 lowercase">
-              estimated response time
-            </p>
-            <p className="text-2xl text-foreground lowercase">
-              30–60 minutes
-            </p>
-            <p className="text-xs text-muted-foreground mt-3 lowercase">
-              larger trips may take longer
-            </p>
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <div className="premium-surface px-5 py-5 text-center">
+              <p className="premium-eyebrow">Response window</p>
+              <p className="mt-3 text-2xl font-medium tracking-[-0.03em] text-foreground">30-60 min</p>
+            </div>
+            <div className="premium-surface px-5 py-5 text-center">
+              <p className="premium-eyebrow">Operators</p>
+              <p className="mt-3 text-sm text-muted-foreground">Vetted transportation partners only</p>
+            </div>
+            <div className="premium-surface px-5 py-5 text-center">
+              <p className="premium-eyebrow">Billing</p>
+              <p className="mt-3 text-sm text-muted-foreground">No charge until confirmed</p>
+            </div>
           </div>
 
-          {/* Trust lines */}
-          <div className="space-y-3 mb-16">
-            <p className="text-xs text-muted-foreground text-center lowercase">
-              vetted operators only
-            </p>
-            <p className="text-xs text-muted-foreground text-center lowercase">
-              no charge until confirmed
-            </p>
-          </div>
-
-          {/* Timeline */}
-          <div className="mb-16">
-            <p className="text-xs text-muted-foreground mb-8 lowercase">
-              what happens next
-            </p>
+          <div className="mt-12">
+            <p className="premium-eyebrow mb-6">What happens next</p>
             <div className="space-y-6">
               {[
                 { number: "01", title: "request received", done: true },
@@ -84,27 +74,17 @@ export default function PendingReviewPage() {
               ))}
             </div>
           </div>
-
-          {/* CTA */}
-          <Link 
-            href="/booking/status"
-            className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground py-4 rounded text-sm font-medium lowercase group hover:opacity-90 transition-opacity"
-          >
-            view status
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-
-          {/* Contact */}
-          <div className="mt-16 pt-8 border-t border-border text-center">
-            <p className="text-xs text-muted-foreground lowercase">
-              questions?{" "}
-              <a href="mailto:support@groupride.com" className="text-foreground hover:underline">
-                support@groupride.com
-              </a>
-            </p>
-          </div>
         </div>
-      </div>
+        <div className="mx-auto mt-8 flex max-w-3xl justify-center">
+          <Button asChild size="lg">
+            <Link href="/booking/status">
+              View status
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+      <Footer />
     </main>
   )
 }

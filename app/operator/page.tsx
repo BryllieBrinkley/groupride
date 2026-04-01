@@ -2,7 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Check, X } from "lucide-react"
+import { ArrowRight, Check } from "lucide-react"
+
+import { DashboardShell } from "@/components/shared/DashboardShell"
+import { DashboardNav } from "@/components/dashboard-nav"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { StatCard } from "@/components/shared/StatCard"
+import { EmptyState } from "@/components/shared/EmptyState"
+import { StatusBadge } from "@/components/shared/StatusBadge"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
 interface Request {
   id: string
@@ -61,122 +70,109 @@ export default function OperatorDashboard() {
   const acceptedRequests = requests.filter(r => r.status === "accepted")
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
-        <div className="flex items-center justify-between h-16 px-6 lg:px-12">
-          <Link href="/" className="text-sm font-medium text-foreground lowercase tracking-tight">
-            groupride
-            <span className="text-muted-foreground ml-2">operator</span>
-          </Link>
-          <button className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase">
-            logout
-          </button>
-        </div>
-      </header>
-      
-      <div className="pt-28 pb-20 px-6 lg:px-12">
-        <div className="max-w-2xl mx-auto">
-          {/* Available Requests */}
-          <section className="mb-16">
-            <div className="flex items-baseline justify-between mb-8">
-              <h1 className="text-xl font-normal text-foreground lowercase">
-                available requests
-              </h1>
-              <span className="text-sm text-muted-foreground">
-                {pendingRequests.length} new
-              </span>
-            </div>
-
-            {pendingRequests.length === 0 ? (
-              <div className="bg-card border border-border rounded-lg p-8 text-center">
-                <p className="text-sm text-muted-foreground lowercase">
-                  no new requests right now
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {pendingRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="bg-card border border-border rounded-lg p-6"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-base font-medium text-foreground lowercase">
-                          {request.route}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1 lowercase">
-                          {request.passengers} passengers / {request.vehicle}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2 lowercase">
-                          {request.date}
-                        </p>
-                      </div>
-                      <p className="text-xl font-medium text-foreground">
-                        {request.price}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3 pt-4 border-t border-border">
-                      <button
-                        onClick={() => handleAccept(request.id)}
-                        className="flex-1 bg-primary text-primary-foreground py-3 rounded text-sm font-medium lowercase flex items-center justify-center gap-2 hover:opacity-90 transition-opacity group"
-                      >
-                        accept
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDecline(request.id)}
-                        className="px-4 py-3 border border-border rounded text-sm text-muted-foreground hover:text-foreground hover:border-foreground transition-colors lowercase"
-                      >
-                        decline
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Accepted Requests */}
-          {acceptedRequests.length > 0 && (
-            <section>
-              <h2 className="text-lg font-normal text-foreground lowercase mb-6">
-                accepted
-              </h2>
-              <div className="space-y-4">
-                {acceptedRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="bg-card border border-border rounded-lg p-6"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-base font-medium text-foreground lowercase">
-                            {request.route}
-                          </h3>
-                          <Check className="h-4 w-4 text-foreground" />
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1 lowercase">
-                          {request.passengers} passengers / {request.vehicle}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2 lowercase">
-                          {request.date}
-                        </p>
-                      </div>
-                      <p className="text-lg font-medium text-foreground">
-                        {request.price}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
+    <DashboardShell
+      sidebar={
+        <DashboardNav
+          currentPath="/operator"
+          items={[
+            { href: "/operator", label: "Overview" },
+            { href: "/operator", label: "Bookings" },
+            { href: "/operator", label: "Pricing" },
+          ]}
+        />
+      }
+      header={
+        <PageHeader
+          eyebrow="Operator portal"
+          title="Incoming trip opportunities"
+          description="Review live requests, accept the right fits, and keep your calendar filled with premium group work."
+          meta={
+            <>
+              <Badge variant="neutral">Warm dispatch workflow</Badge>
+              <Badge variant="blue">Real-time demand</Badge>
+            </>
+          }
+          actions={
+            <Button asChild variant="outline">
+              <Link href="/">Back to site</Link>
+            </Button>
+          }
+        />
+      }
+    >
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCard label="New requests" value={pendingRequests.length} />
+        <StatCard label="Accepted trips" value={acceptedRequests.length} />
+        <StatCard label="Close rate" value="67%" />
       </div>
-    </main>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground">Available requests</h2>
+          <p className="text-sm text-muted-foreground">{pendingRequests.length} waiting for response</p>
+        </div>
+
+        {pendingRequests.length === 0 ? (
+          <EmptyState title="No new requests right now" description="New GroupRide trip opportunities will appear here as they are routed to your fleet." />
+        ) : (
+          <div className="grid gap-4 xl:grid-cols-2">
+            {pendingRequests.map((request) => (
+              <div key={request.id} className="premium-panel p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-xl font-medium text-foreground">{request.route}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {request.passengers} passengers • {request.vehicle}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{request.date}</p>
+                  </div>
+                  <p className="text-2xl font-medium tracking-[-0.04em] text-foreground">{request.price}</p>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3 border-t border-border pt-5">
+                  <Button className="group flex-1" onClick={() => handleAccept(request.id)}>
+                    Accept
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </Button>
+                  <Button variant="outline" className="flex-1" onClick={() => handleDecline(request.id)}>
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {acceptedRequests.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground">Accepted</h2>
+          <div className="grid gap-4 xl:grid-cols-2">
+            {acceptedRequests.map((request) => (
+              <div key={request.id} className="premium-panel p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-xl font-medium text-foreground">{request.route}</h3>
+                      <Check className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {request.passengers} passengers • {request.vehicle}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{request.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-medium tracking-[-0.04em] text-foreground">{request.price}</p>
+                    <div className="mt-2">
+                      <StatusBadge status="confirmed" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </DashboardShell>
   )
 }

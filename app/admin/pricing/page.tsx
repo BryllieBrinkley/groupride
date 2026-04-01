@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
 import { listPricingRules } from "@/lib/services/bookings";
 
@@ -40,18 +41,17 @@ export default async function AdminPricingPage() {
       header={
         <PageHeader
           eyebrow="Pricing & fees"
-          title="instant estimates."
+          title="Instant estimates"
           description="Baseline fares by vehicle category—sprinters, coaches, and SUVs. Admins can still send a custom quote when a trip needs manual pricing."
           meta={
-            <div className="flex flex-wrap gap-3">
+            <>
               <Badge variant="blue">Automated estimates</Badge>
               <Badge variant="neutral">Manual overrides OK</Badge>
-            </div>
+            </>
           }
         />
       }
     >
-      {/* Stat row */}
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <StatCard label="Active rules" value={kpi.active} />
         <StatCard label="Seasonal adjustments" value={kpi.seasonal} />
@@ -59,19 +59,17 @@ export default async function AdminPricingPage() {
         <StatCard label="Custom surcharges" value={kpi.custom} />
       </div>
 
-      {/* Filter/search row */}
       <FilterBar>
-        <input className="input input-bordered w-full max-w-xs" placeholder="Search pricing rules..." />
-        <select className="select select-bordered">
+        <Input className="max-w-sm bg-background" placeholder="Search pricing rules..." />
+        <select className="h-12 rounded-2xl border border-border bg-background px-4 text-sm text-foreground outline-none">
           <option>Status</option>
           <option>Active</option>
           <option>Inactive</option>
         </select>
       </FilterBar>
 
-      {/* Table section with loading/empty/data states */}
       {isLoading ? (
-        <LoadingSkeleton className="h-32 w-full rounded-xl" />
+        <LoadingSkeleton />
       ) : pricingRules.length === 0 ? (
         <EmptyState title="No pricing rules found" description="No pricing rules match your filters." />
       ) : (
@@ -83,7 +81,7 @@ export default async function AdminPricingPage() {
             { key: "baseRate", label: "Base Rate", render: (val: any) => `$${val}` },
             { key: "perMileRate", label: "Per-Mile Rate", render: (val: any) => `$${val}` },
             { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
-            { key: "actions", label: "Actions", render: (_: any, row: any) => <button className="text-blue-600">Edit</button> },
+            { key: "actions", label: "Actions", render: () => <span className="text-muted-foreground">Edit</span> },
           ]}
           data={pricingRules.map((r: any) => ({ ...r, actions: "" }))}
         />

@@ -1,5 +1,7 @@
 import React from "react";
 
+import { cn } from "@/lib/utils";
+
 interface FilterBarProps {
   children: React.ReactNode;
   className?: string;
@@ -7,7 +9,7 @@ interface FilterBarProps {
 
 export function FilterBar({ children, className = "" }: FilterBarProps) {
   return (
-    <div className={`flex flex-wrap gap-2 items-center mb-6 ${className}`}>
+    <div className={cn("premium-panel flex flex-wrap items-center gap-3 px-5 py-5", className)}>
       {children}
     </div>
   );

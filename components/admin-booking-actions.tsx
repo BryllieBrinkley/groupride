@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { FormField } from "@/components/shared/FormField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -59,7 +60,7 @@ export function AdminBookingActions({ bookingId }: { bookingId: string }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="premium-panel space-y-5 p-6">
       <div className="flex flex-wrap gap-2">
         <Button disabled={isPending} onClick={() => runReviewAction("route_offers")}>
           Send to operators
@@ -73,24 +74,28 @@ export function AdminBookingActions({ bookingId }: { bookingId: string }) {
       </div>
 
       <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-        <Input
-          type="number"
-          placeholder="New trip total ($)"
-          value={price}
-          onChange={(event) => setPrice(event.target.value)}
-        />
-        <Input
-          placeholder="Why the price changed (customer sees this)"
-          value={reason}
-          onChange={(event) => setReason(event.target.value)}
-        />
+        <FormField label="New total">
+          <Input
+            type="number"
+            placeholder="New trip total ($)"
+            value={price}
+            onChange={(event) => setPrice(event.target.value)}
+          />
+        </FormField>
+        <FormField label="Reason">
+          <Input
+            placeholder="Why the price changed (customer sees this)"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </FormField>
         <Button disabled={isPending} variant="secondary" className="h-12" onClick={runPriceOverride}>
           Send to customer
         </Button>
       </div>
 
-      {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {message ? <p className="text-sm text-[#597358]">{message}</p> : null}
+      {error ? <p className="text-sm text-[#8c5d50]">{error}</p> : null}
     </div>
   );
 }

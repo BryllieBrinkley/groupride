@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
 import { listAdminBookings } from "@/lib/services/bookings";
 import { formatLocalDateTime } from "@/lib/time";
@@ -42,18 +43,17 @@ export default async function AdminBookingsPage() {
       header={
         <PageHeader
           eyebrow="Booking queue"
-          title="trip queue."
+          title="Trip queue"
           description="Send requests to transportation partners, adjust pricing with customer approval, and close trips that can’t be fulfilled."
           meta={
-            <div className="flex flex-wrap gap-3">
+            <>
               <Badge variant="neutral">Control: pricing + supply</Badge>
               <Badge variant="blue">Workflow: coordinated</Badge>
-            </div>
+            </>
           }
         />
       }
     >
-      {/* Stat row */}
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <StatCard label="Total bookings" value={kpi.total} />
         <StatCard label="Pending" value={kpi.pending} />
@@ -61,21 +61,19 @@ export default async function AdminBookingsPage() {
         <StatCard label="Cancelled" value={kpi.cancelled} />
       </div>
 
-      {/* Filter/search row */}
       <FilterBar>
-        <input className="input input-bordered w-full max-w-xs" placeholder="Search bookings..." />
-        <select className="select select-bordered">
+        <Input className="max-w-sm bg-background" placeholder="Search bookings..." />
+        <select className="h-12 rounded-2xl border border-border bg-background px-4 text-sm text-foreground outline-none">
           <option>Status</option>
           <option>Pending</option>
           <option>Confirmed</option>
           <option>Cancelled</option>
         </select>
-        <input type="date" className="input input-bordered" />
+        <Input type="date" className="max-w-[220px] bg-background" />
       </FilterBar>
 
-      {/* Table section with loading/empty/data states */}
       {isLoading ? (
-        <LoadingSkeleton className="h-32 w-full rounded-xl" />
+        <LoadingSkeleton />
       ) : bookings.length === 0 ? (
         <EmptyState title="No bookings found" description="No bookings match your filters." />
       ) : (
@@ -83,8 +81,8 @@ export default async function AdminBookingsPage() {
           columns={[
             { key: "customer", label: "Customer", render: (_: any, row: any) => row.customerName },
             { key: "route", label: "Route", render: (_: any, row: any) => `${row.pickupLocation.city}, ${row.pickupLocation.state} to ${row.dropoffLocation.city}, ${row.dropoffLocation.state}` },
-            { key: "operator", label: "Operator", render: (_: any, row: any) => row.operatorName },
-            { key: "vehicle", label: "Vehicle", render: (_: any, row: any) => row.vehicleName },
+            { key: "operator", label: "Operator", render: (_: any, row: any) => row.operatorName ?? "Unassigned" },
+            { key: "vehicle", label: "Vehicle", render: (_: any, row: any) => row.vehicleName ?? "TBD" },
             { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
             { key: "activeAmount", label: "Amount", render: (val: any) => formatCurrency(val) },
             { key: "pickupDateTimeUtc", label: "Date", render: (val: any, row: any) => formatLocalDateTime(val, row.pickupTimezone) },

@@ -1,6 +1,6 @@
 import React from "react";
 
-import React from "react";
+import { cn } from "@/lib/utils";
 
 export type PageHeaderProps = {
   eyebrow?: string;
@@ -9,6 +9,7 @@ export type PageHeaderProps = {
   meta?: React.ReactNode;
   actions?: React.ReactNode;
   children?: React.ReactNode;
+  className?: string;
 };
 
 export function PageHeader({
@@ -18,29 +19,26 @@ export function PageHeader({
   meta,
   actions,
   children,
+  className,
 }: PageHeaderProps) {
   return (
-    <header className="mb-8 rounded-2xl border border-[#e5e0d8] bg-[#f7f4ef] shadow-[0_4px_24px_rgba(0,0,0,0.04)] px-6 py-8 md:px-10 md:py-10">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex-1">
-          {eyebrow && (
-            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-black/35">
-              {eyebrow}
-            </div>
-          )}
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-2 lowercase">
+    <header className={cn("premium-panel px-7 py-8 md:px-10 md:py-10", className)}>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-3xl">
+          {eyebrow ? <p className="premium-eyebrow mb-3">{eyebrow}</p> : null}
+          <h1 className="text-4xl font-medium tracking-[-0.05em] text-foreground sm:text-5xl">
             {title}
           </h1>
-          {description && (
-            <p className="text-lg text-muted-foreground mb-4 lowercase">{description}</p>
-          )}
-          {meta && <div className="mb-2">{meta}</div>}
+          {description ? (
+            <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+              {description}
+            </p>
+          ) : null}
+          {meta ? <div className="mt-5 flex flex-wrap gap-2.5">{meta}</div> : null}
         </div>
-        {actions && (
-          <div className="flex-shrink-0 flex flex-row md:flex-col gap-2 md:items-end">{actions}</div>
-        )}
+        {actions ? <div className="flex shrink-0 flex-wrap gap-3">{actions}</div> : null}
       </div>
-      {children && <div className="mt-6">{children}</div>}
+      {children ? <div className="mt-8">{children}</div> : null}
     </header>
   );
 }

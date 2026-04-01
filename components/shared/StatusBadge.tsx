@@ -1,23 +1,35 @@
 import React from "react";
 
+import { cn } from "@/lib/utils";
+
 interface StatusBadgeProps {
   status: string;
   className?: string;
 }
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  confirmed: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
-  completed: "bg-blue-100 text-blue-800",
-  default: "bg-gray-100 text-gray-800",
+  pending: "border-[#ecd9ad] bg-[#f7ecce] text-[#8b6b3f]",
+  confirmed: "border-[#cfdcc8] bg-[#e4efe0] text-[#597358]",
+  cancelled: "border-[#ead6d0] bg-[#f4e6e1] text-[#8c5d50]",
+  completed: "border-[#d2dfeb] bg-[#e2ecf5] text-[#57728d]",
+  active: "border-[#cfdcc8] bg-[#e4efe0] text-[#597358]",
+  suspended: "border-[#ead6d0] bg-[#f4e6e1] text-[#8c5d50]",
+  default: "border-border bg-background text-muted-foreground",
 };
 
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
-  const color = statusColors[status] || statusColors.default;
+  const normalized = status.toLowerCase();
+  const color = statusColors[normalized] || statusColors.default;
+
   return (
-    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${color} ${className}`}>
-      {status}
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em]",
+        color,
+        className,
+      )}
+    >
+      {status.replace(/_/g, " ")}
     </span>
   );
 }

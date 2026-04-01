@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { FormField } from "@/components/shared/FormField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { PricingRule } from "@/lib/types";
 
 export function PricingRuleEditor({ rule }: { rule: PricingRule }) {
@@ -45,11 +45,11 @@ export function PricingRuleEditor({ rule }: { rule: PricingRule }) {
   };
 
   return (
-    <div className="rounded-xl border border-line bg-[#F6F8FA] p-6">
+    <div className="premium-panel p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-lg font-semibold text-ink">{rule.category.toUpperCase()}</p>
-          <p className="text-sm text-copy-muted">Adjust the deterministic default quote inputs.</p>
+          <p className="premium-eyebrow">{rule.category}</p>
+          <p className="mt-2 text-lg font-medium text-foreground">Adjust the deterministic default quote inputs.</p>
         </div>
         <Button disabled={isPending} onClick={save}>
           Save
@@ -64,8 +64,8 @@ export function PricingRuleEditor({ rule }: { rule: PricingRule }) {
         <PricingField label="Min hours" value={minimumHours} onChange={setMinimumHours} />
       </div>
 
-      {message ? <p className="mt-3 text-sm text-emerald-700">{message}</p> : null}
-      {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
+      {message ? <p className="mt-3 text-sm text-[#597358]">{message}</p> : null}
+      {error ? <p className="mt-3 text-sm text-[#8c5d50]">{error}</p> : null}
     </div>
   );
 }
@@ -80,9 +80,8 @@ function PricingField({
   onChange: (value: string) => void;
 }) {
   return (
-    <Label>
-      {label}
-      <Input className="mt-2" type="number" value={value} onChange={(event) => onChange(event.target.value)} />
-    </Label>
+    <FormField label={label}>
+      <Input type="number" value={value} onChange={(event) => onChange(event.target.value)} />
+    </FormField>
   );
 }

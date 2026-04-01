@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -48,43 +48,49 @@ export function LoginForm() {
 };;
 
   return (
-    <Card className="bg-[#F6F8FA]">
+    <Card className="border-border bg-card">
       <CardHeader>
         <Badge variant="neutral">Partner & admin sign-in</Badge>
-        <CardTitle className="mt-5 text-3xl">Welcome back</CardTitle>
-        <p className="mt-3 text-sm leading-6 text-copy-muted">Sign in to manage trips as a transportation partner or platform admin. Demo accounts below.</p>
+        <CardTitle className="mt-4 text-3xl sm:text-4xl">Welcome back</CardTitle>
+        <CardDescription>
+          Sign in to manage trips, operators, pricing, and customer requests. Demo accounts are included below.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-      <form onSubmit={onSubmit} className="space-y-5">
-      <div className="space-y-3">
-        <Label className="block">
-          Email
-          <Input className="mt-2" value={email} onChange={(event) => setEmail(event.target.value)} />
-        </Label>
-        <Label className="block">
-          Password
-          <Input
-            type="password"
-            className="mt-2"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </Label>
-      </div>
+        <form onSubmit={onSubmit} className="space-y-5">
+          <div className="space-y-4">
+            <div className="space-y-2.5">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+            </div>
+            <div className="space-y-2.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </div>
+          </div>
 
-      {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+          {error ? <p className="rounded-2xl border border-[#ead6d0] bg-[#f4e6e1] px-4 py-3 text-sm text-[#8c5d50]">{error}</p> : null}
 
-      <Button disabled={isPending} className="w-full">
-        {isPending ? "Signing in..." : "Sign in"}
-      </Button>
+          <Button disabled={isPending} size="lg" className="w-full">
+            {isPending ? "Signing in..." : "Sign in"}
+          </Button>
 
-      <div className="rounded-xl border border-line bg-white p-4 text-sm text-copy">
-        <p className="font-semibold text-ink">Sample logins</p>
-        <p className="mt-2">Platform admin: `admin@groupride.app` / `Admin123!`</p>
-        <p>Transportation partner: `ops@charlottemobility.com` / `Operator123!`</p>
-      </div>
-    </form>
-    </CardContent>
+          <div className="rounded-[1.75rem] border border-border bg-background/80 p-5 text-sm text-muted-foreground">
+            <p className="premium-eyebrow">Sample logins</p>
+            <p className="mt-3">
+              Platform admin: <span className="text-foreground">admin@groupride.app / Admin123!</span>
+            </p>
+            <p className="mt-1">
+              Transportation partner: <span className="text-foreground">ops@charlottemobility.com / Operator123!</span>
+            </p>
+          </div>
+        </form>
+      </CardContent>
     </Card>
   );
 }

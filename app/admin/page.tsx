@@ -9,6 +9,7 @@ import { FilterBar } from "@/components/shared/FilterBar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
 import { getDashboardMetrics, listAdminBookings } from "@/lib/services/bookings";
 import { formatCurrency } from "@/lib/utils";
@@ -36,18 +37,17 @@ export default async function AdminPage() {
       header={
         <PageHeader
           eyebrow="platform admin"
-          title="marketplace command center."
+          title="Marketplace command center"
           description="Monitor trips, pricing, and partners. Step in when a booking needs a human."
           meta={
-            <div className="flex flex-wrap gap-3">
+            <>
               <Badge variant="blue">Queue open</Badge>
               <Badge variant="neutral">Same-day response target</Badge>
-            </div>
+            </>
           }
         />
       }
     >
-      {/* Stat row */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-8">
         <StatCard label="Trip requests" value={`${metrics.totalRequests}`} />
         <StatCard label="Needs review" value={`${metrics.pendingReview}`} />
@@ -55,14 +55,15 @@ export default async function AdminPage() {
         <StatCard label="Booked volume" value={formatCurrency(metrics.grossBookedRevenue)} />
       </div>
 
-      {/* Filter/search row */}
       <FilterBar>
-        {/* Add filter/search controls here */}
+        <Input className="max-w-sm bg-background" placeholder="Search by route or customer" />
+        <div className="rounded-2xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+          Live booking queue
+        </div>
       </FilterBar>
 
-      {/* Table section with loading/empty/data states */}
       {isLoading ? (
-        <LoadingSkeleton className="h-32 w-full rounded-xl" />
+        <LoadingSkeleton />
       ) : queue.length === 0 ? (
         <EmptyState title="No bookings in queue" description="All caught up!" />
       ) : (
