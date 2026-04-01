@@ -1,9 +1,9 @@
 import Stripe from "stripe";
 
-import { getStore } from "@/lib/data/demo-store";
+import { createId, getStore } from "@/lib/data/demo-store";
 import { env } from "@/lib/env";
-import type { Booking, PaymentAttempt, PaymentCaptureResult, PaymentMethodRecord } from "@/lib/types";
-import { makeId, nowIso } from "@/lib/utils";
+import type { Booking, Payment, PaymentCaptureResult, Quote } from "@/lib/types";
+import { nowIso } from "@/lib/utils";
 
 let stripeClient: Stripe | undefined;
 
@@ -16,102 +16,94 @@ function getStripe() {
   return stripeClient;
 }
 
-export function savePaymentMethod(booking: Booking, providedPaymentMethodId?: string) {
-  const store = getStore();
-  const paymentMethod: PaymentMethodRecord = {
-    id: makeId("pm"),
-    bookingId: booking.id,
-    customerEmail: getBookingEmail(booking.customerProfileId),
-    provider: providedPaymentMethodId && !env.demoMode ? "stripe" : "demo",
-    providerPaymentMethodId: providedPaymentMethodId ?? makeId("pm_demo"),
-    status: "saved",
-    createdAt: nowIso()
-  };
-
-  store.paymentMethods.unshift(paymentMethod);
-  return paymentMethod;
+export function listPaymentsForCustomer(customerProfileId: string) {
+  return getStore().payments.filter((payment) => payment.customerProfileId === customerProfileId);
 }
 
-export async function capturePayment(booking: Booking): Promise<PaymentCaptureResult> {
-  const store = getStore();
-  const paymentMethod = store.paymentMethods.find((entry) => entry.bookingId === booking.id);
-  const stripe = getStripe();
+export function getPaymentByBookingId(bookingId: string) {
+  return getStore().payments.find((payment) => payment.bookingId === bookingId) ?? null;
+}
 
-  if (stripe && paymentMethod?.provider === "stripe" && !env.demoMode) {
-    const intent = await stripe.paymentIntents.create({
-      amount: Math.round(booking.activeAmount * 100),
-      currency: "usd",
-      payment_method: paymentMethod.providerPaymentMethodId,
-      confirm: true,
-      off_session: true,
-      metadata: { bookingId: booking.id }
-    });
-
-    const statusMap: Record<string, PaymentCaptureResult["paymentStatus"]> = {
-      succeeded: "paid",
-      requires_action: "requires_action",
-      processing: "processing"
-    };
-    const paymentStatus = statusMap[intent.status] ?? "requires_action";
-
-    const result: PaymentCaptureResult = {
-      paymentStatus,
-      paymentIntentId: intent.id,
-      recoveryToken: paymentStatus === "requires_action" ? makeId("recover") : undefined,
-      failureReason: paymentStatus === "requires_action" ? "Customer authentication required." : undefined
-    };
-
-    recordAttempt(booking.id, booking.activeAmount, result);
-    return result;
+export async function createPaymentIntent(input: {
+  booking: Booking;
+  quote: Quote;
+}) {
+  const existing = getPaymentByBookingId(input.booking.id);
+  if (existing && ["pending", "requires_action", "succeeded"].includes(existing.status)) {
+    return existing;
   }
 
-  const requiresAction =
-    booking.activeAmount >= 900 || getBookingEmail(booking.customerProfileId).includes("action-required");
-
-  const result: PaymentCaptureResult = {
-    paymentStatus: requiresAction ? "requires_action" : "paid",
-    paymentIntentId: makeId("pi_demo"),
-    recoveryToken: requiresAction ? makeId("recover") : undefined,
-    failureReason: requiresAction ? "Additional customer authentication required." : undefined
+  const stripe = getStripe();
+  const payment: Payment = {
+    id: createId("payment"),
+    bookingId: input.booking.id,
+    quoteId: input.quote.id,
+    customerProfileId: input.booking.customerProfileId,
+    provider: stripe && !env.demoMode ? "stripe" : "demo",
+    paymentIntentId: undefined,
+    paymentMethodId: undefined,
+    amount: input.quote.amount,
+    currency: "usd",
+    status: "pending",
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
   };
 
-  recordAttempt(booking.id, booking.activeAmount, result);
-  return result;
+  if (stripe && !env.demoMode) {
+    const intent = await stripe.paymentIntents.create({
+      amount: input.quote.amount * 100,
+      currency: "usd",
+      automatic_payment_methods: { enabled: true },
+      metadata: {
+        bookingId: input.booking.id,
+        quoteId: input.quote.id,
+      },
+    });
+
+    payment.paymentIntentId = intent.id;
+  } else {
+    payment.paymentIntentId = createId("pi_demo");
+  }
+
+  getStore().payments.unshift(payment);
+  return payment;
 }
 
-export function refundPayment(booking: Booking, amount: number) {
-  const store = getStore();
-  const attempt: PaymentAttempt = {
-    id: makeId("refund"),
-    bookingId: booking.id,
-    amount,
-    status: "refunded",
-    provider: "demo",
-    providerIntentId: makeId("refund_demo"),
-    createdAt: nowIso()
+export async function capturePayment(paymentId: string): Promise<PaymentCaptureResult> {
+  const payment = getStore().payments.find((entry) => entry.id === paymentId);
+  if (!payment) {
+    throw new Error("Payment not found.");
+  }
+
+  payment.status = "succeeded";
+  payment.updatedAt = nowIso();
+
+  return {
+    paymentStatus: payment.status,
+    paymentIntentId: payment.paymentIntentId ?? createId("pi_demo"),
   };
-  store.paymentAttempts.unshift(attempt);
-  return attempt;
 }
 
-function recordAttempt(bookingId: string, amount: number, result: PaymentCaptureResult) {
-  const store = getStore();
-  const attempt: PaymentAttempt = {
-    id: makeId("pay"),
-    bookingId,
-    amount,
-    status: result.paymentStatus,
-    provider: env.stripeSecretKey && !env.demoMode ? "stripe" : "demo",
-    providerIntentId: result.paymentIntentId,
-    failureReason: result.failureReason,
-    createdAt: nowIso()
-  };
+export function markPaymentRequiresAction(paymentId: string, failureReason: string) {
+  const payment = getStore().payments.find((entry) => entry.id === paymentId);
+  if (!payment) {
+    throw new Error("Payment not found.");
+  }
 
-  store.paymentAttempts.unshift(attempt);
-  return attempt;
+  payment.status = "requires_action";
+  payment.lastError = failureReason;
+  payment.updatedAt = nowIso();
+  return payment;
 }
 
-function getBookingEmail(customerProfileId: string) {
-  const store = getStore();
-  return store.customers.find((customer) => customer.id === customerProfileId)?.email ?? "unknown@groupride.app";
+export function refundPayment(bookingId: string, amount?: number) {
+  const payment = getPaymentByBookingId(bookingId);
+  if (!payment) {
+    throw new Error("Payment not found.");
+  }
+
+  payment.status = "refunded";
+  payment.refundAmount = amount ?? payment.amount;
+  payment.updatedAt = nowIso();
+  return payment;
 }

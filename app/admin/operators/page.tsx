@@ -12,7 +12,7 @@ import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
-import { listOperators } from "@/lib/services/bookings";
+import { listOperators } from "@/lib/services/operators";
 
 export default async function AdminOperatorsPage() {
   await requireRole(["admin"]);
@@ -78,7 +78,7 @@ export default async function AdminOperatorsPage() {
         <DataTable
           columns={[
             { key: "companyName", label: "Company" },
-            { key: "serviceArea", label: "Service Area", render: (_: any, row: any) => (row.serviceAreas?.map((a: any) => a.label).join(", ") || "-") },
+            { key: "serviceArea", label: "Service Area", render: (_: any, row: any) => row.serviceAreas?.join(", ") || "-" },
             { key: "fleetSize", label: "Fleet Size", render: (_: any, row: any) => row.vehicles?.length || 0 },
             { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
             { key: "completedRides", label: "Completed Rides" },
@@ -86,10 +86,12 @@ export default async function AdminOperatorsPage() {
             { key: "actions", label: "Actions", render: () => <span className="text-muted-foreground">View</span> },
           ]}
           data={operators.map((o: any) => ({
-            ...o,
-            serviceArea: o.serviceAreas,
-            fleetSize: o.vehicles?.length || 0,
-            completedRides: o.completedRides || 0,
+            companyName: o.companyName,
+            serviceAreas: o.serviceAreas,
+            vehicles: o.vehicles,
+            status: o.status,
+            rating: o.rating,
+            completedRides: o.completedTrips || 0,
             actions: "",
           }))}
         />

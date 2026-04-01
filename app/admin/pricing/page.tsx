@@ -77,9 +77,9 @@ export default async function AdminPricingPage() {
           columns={[
             { key: "name", label: "Rule Name" },
             { key: "region", label: "Region" },
-            { key: "vehicleType", label: "Vehicle Type" },
-            { key: "baseRate", label: "Base Rate", render: (val: any) => `$${val}` },
-            { key: "perMileRate", label: "Per-Mile Rate", render: (val: any) => `$${val}` },
+            { key: "category", label: "Vehicle Type" },
+            { key: "baseFare", label: "Base Rate", render: (val: any) => `$${val}` },
+            { key: "ratePerMile", label: "Per-Mile Rate", render: (val: any) => `$${val}` },
             { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
             { key: "actions", label: "Actions", render: () => <span className="text-muted-foreground">Edit</span> },
           ]}

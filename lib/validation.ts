@@ -31,8 +31,15 @@ export const tripRequestSchema = z
     contactPhone: z.string().min(10),
     createAccount: z.boolean().optional().default(false),
     password: z.string().min(8).optional(),
-    selectedVehicleCategory: z.enum(["suv", "sprinter", "minibus"]).optional(),
-    paymentMethodToken: z.string().min(4).optional()
+    selectedVehicleCategory: z.enum(["suv", "sprinter", "minibus", "charter_bus"]).optional(),
+    paymentMethodToken: z.string().min(4).optional(),
+    distanceMiles: z.coerce.number().min(0).optional(),
+    driveTimeMinutes: z.coerce.number().min(0).optional(),
+    formattedRouteText: z.string().max(300).optional(),
+    pickupLat: z.coerce.number().optional(),
+    pickupLng: z.coerce.number().optional(),
+    dropoffLat: z.coerce.number().optional(),
+    dropoffLng: z.coerce.number().optional()
   })
   .superRefine((value, ctx) => {
     if (value.tripType === "round_trip" && !value.returnDateTimeLocal) {
@@ -73,7 +80,7 @@ export const loginSchema = z.object({
 });
 
 export const adminReviewSchema = z.object({
-  action: z.enum(["route_offers", "close_unfulfilled", "mark_no_supply"])
+  action: z.enum(["request_quote", "cancel_booking", "mark_confirmed"])
 });
 
 export const priceOverrideSchema = z.object({

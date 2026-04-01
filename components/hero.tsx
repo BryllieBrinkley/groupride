@@ -2,66 +2,56 @@
 
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { useLoadScript } from "@react-google-maps/api";
+import { useMemo, useState } from "react";
 
-const libraries: ("places")[] = ["places"];
+import { GooglePlaceField } from "@/components/google-place-field";
+import { useRouteMetrics } from "@/hooks/use-route-metrics";
+import { buildQuotePricingInput, calculateQuoteBreakdown } from "@/lib/services/quote-calculator";
+import type { GooglePlaceSelection } from "@/lib/types";
+
+function serializePlace(place: GooglePlaceSelection | null) {
+  return place ? JSON.stringify(place) : "";
+}
 
 export function Hero() {
   const router = useRouter();
 
-  const pickupRef = useRef<HTMLInputElement | null>(null);
-  const dropoffRef = useRef<HTMLInputElement | null>(null);
-
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
+  const [pickupPlace, setPickupPlace] = useState<GooglePlaceSelection | null>(null);
+  const [dropoffPlace, setDropoffPlace] = useState<GooglePlaceSelection | null>(null);
   const [dateTime, setDateTime] = useState("");
   const [passengers, setPassengers] = useState("");
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries,
+  const { metrics, isLoading: isRouteLoading, error: routeError } = useRouteMetrics({
+    pickup: pickupPlace,
+    dropoff: dropoffPlace,
   });
 
-  useEffect(() => {
-    if (!isLoaded || !window.google) return;
+  const recommendedVehicle = useMemo(() => {
+    const passengerCount = Number(passengers || 0);
+    if (passengerCount > 35) return "charter_bus";
+    if (passengerCount > 14) return "minibus";
+    return "sprinter";
+  }, [passengers]);
 
-    if (pickupRef.current) {
-      const pickupAutocomplete = new window.google.maps.places.Autocomplete(
-        pickupRef.current,
-        {
-          fields: ["formatted_address", "geometry", "name"],
-          types: ["geocode"],
-        }
-      );
-
-      pickupAutocomplete.addListener("place_changed", () => {
-        const place = pickupAutocomplete.getPlace();
-
-        if (place.formatted_address) {
-          setPickup(place.formatted_address);
-        }
-      });
+  const quoteBreakdown = useMemo(() => {
+    if (!metrics) {
+      return null;
     }
 
-    if (dropoffRef.current) {
-      const dropoffAutocomplete = new window.google.maps.places.Autocomplete(
-        dropoffRef.current,
-        {
-          fields: ["formatted_address", "geometry", "name"],
-          types: ["geocode"],
-        }
-      );
-
-      dropoffAutocomplete.addListener("place_changed", () => {
-        const place = dropoffAutocomplete.getPlace();
-
-        if (place.formatted_address) {
-          setDropoff(place.formatted_address);
-        }
-      });
-    }
-  }, [isLoaded]);
+    return calculateQuoteBreakdown(
+      buildQuotePricingInput({
+        vehicleCategory: recommendedVehicle,
+        tripType: "one_way",
+        distanceMiles: metrics.distanceMiles,
+        driveTimeMinutes: metrics.driveTimeMinutes,
+        routeText: metrics.formattedRouteText,
+        pickupLabel: pickupPlace?.formattedAddress,
+        dropoffLabel: dropoffPlace?.formattedAddress,
+        pickupDateTimeLocal: dateTime,
+      }),
+    );
+  }, [dateTime, dropoffPlace?.formattedAddress, metrics, pickupPlace?.formattedAddress, recommendedVehicle]);
 
   const handleGetQuote = () => {
     const params = new URLSearchParams({
@@ -71,13 +61,29 @@ export function Hero() {
       passengers,
     });
 
+    if (pickupPlace) {
+      params.set("pickup_place", serializePlace(pickupPlace));
+    }
+
+    if (dropoffPlace) {
+      params.set("dropoff_place", serializePlace(dropoffPlace));
+    }
+    if (metrics) {
+      params.set("distance", metrics.distanceMiles.toString());
+      params.set("duration", metrics.driveTimeMinutes.toString());
+      params.set("route_text", metrics.formattedRouteText);
+      params.set("pickup_lat", metrics.pickupLat.toString());
+      params.set("pickup_lng", metrics.pickupLng.toString());
+      params.set("dropoff_lat", metrics.dropoffLat.toString());
+      params.set("dropoff_lng", metrics.dropoffLng.toString());
+    }
+
     router.push(`/quote?${params.toString()}`);
   };
 
   return (
     <section className="min-h-screen bg-[#f7f4ef]">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
-        {/* Left Side */}
         <div className="flex flex-1 flex-col justify-center px-6 pt-28 pb-14 lg:px-12 lg:pt-0 lg:pb-0">
           <div className="max-w-xl">
             <div className="mb-6 inline-flex rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-medium uppercase tracking-[0.16em] text-black/55">
@@ -146,7 +152,6 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Right Side */}
         <div className="flex flex-1 items-center justify-center px-6 pb-14 lg:px-12 lg:pb-0">
           <div className="w-full max-w-md">
             <div className="rounded-[32px] border border-[#d8d2ca] bg-[#e9e4dd] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.08)] lg:p-8">
@@ -162,34 +167,67 @@ export function Hero() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-black/45">
-                    pickup
-                  </label>
+                <GooglePlaceField
+                  id="hero-pickup"
+                  label="pickup"
+                  value={pickup}
+                  selectedPlace={pickupPlace}
+                  onValueChange={setPickup}
+                  onPlaceSelect={setPickupPlace}
+                  placeholder="airport, hotel, or address"
+                  enableCurrentLocation
+                />
 
-                  <input
-                    ref={pickupRef}
-                    type="text"
-                    value={pickup}
-                    onChange={(event) => setPickup(event.target.value)}
-                    placeholder="airport, hotel, or address"
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f4ef] px-4 py-4 text-sm lowercase text-black outline-none transition placeholder:text-black/35 focus:border-black/30"
-                  />
-                </div>
+                <GooglePlaceField
+                  id="hero-dropoff"
+                  label="dropoff"
+                  value={dropoff}
+                  selectedPlace={dropoffPlace}
+                  onValueChange={setDropoff}
+                  onPlaceSelect={setDropoffPlace}
+                  placeholder="venue, hotel, or destination"
+                />
 
-                <div>
-                  <label className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-black/45">
-                    dropoff
-                  </label>
+                <div className="rounded-2xl border border-black/10 bg-[#f7f4ef] px-4 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-[0.12em] text-black/45">
+                        live quote summary
+                      </p>
+                      <p className="mt-2 text-sm text-black/55">
+                        {metrics ? metrics.formattedRouteText : "Select pickup and dropoff to price your route."}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs uppercase tracking-[0.12em] text-black/40">estimated total</p>
+                      <p className="mt-2 text-2xl font-medium text-black">
+                        {quoteBreakdown ? `$${quoteBreakdown.total.toFixed(0)}` : "--"}
+                      </p>
+                    </div>
+                  </div>
 
-                  <input
-                    ref={dropoffRef}
-                    type="text"
-                    value={dropoff}
-                    onChange={(event) => setDropoff(event.target.value)}
-                    placeholder="venue, hotel, or destination"
-                    className="w-full rounded-2xl border border-black/10 bg-[#f7f4ef] px-4 py-4 text-sm lowercase text-black outline-none transition placeholder:text-black/35 focus:border-black/30"
-                  />
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-black/8 bg-white/60 px-3 py-3">
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-black/40">distance</p>
+                      <p className="mt-2 text-sm text-black/70">
+                        {isRouteLoading ? "Calculating..." : metrics ? `${metrics.distanceMiles} miles` : "--"}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-black/8 bg-white/60 px-3 py-3">
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-black/40">drive time</p>
+                      <p className="mt-2 text-sm text-black/70">
+                        {isRouteLoading ? "Calculating..." : metrics ? `${metrics.driveTimeMinutes} min` : "--"}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-black/8 bg-white/60 px-3 py-3">
+                      <p className="text-[11px] uppercase tracking-[0.12em] text-black/40">vehicle</p>
+                      <p className="mt-2 text-sm text-black/70">{recommendedVehicle.replace("_", " ")}</p>
+                    </div>
+                  </div>
+
+                  {routeError ? (
+                    <p className="mt-3 text-xs leading-5 text-[#8c5d50]">{routeError}</p>
+                  ) : null}
                 </div>
 
                 <div>

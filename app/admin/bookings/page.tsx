@@ -10,14 +10,15 @@ import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
+import { getStore } from "@/lib/data/demo-store";
 import { listAdminBookings } from "@/lib/services/bookings";
-import { formatLocalDateTime } from "@/lib/time";
 import { formatCurrency } from "@/lib/utils";
 
 
 export default async function AdminBookingsPage() {
   await requireRole(["admin"]);
   const bookings = listAdminBookings();
+  const store = getStore();
   const isLoading = false; // Replace with actual loading state if needed
   // Example KPIs
   const kpi = {
@@ -85,9 +86,16 @@ export default async function AdminBookingsPage() {
             { key: "vehicle", label: "Vehicle", render: (_: any, row: any) => row.vehicleName ?? "TBD" },
             { key: "status", label: "Status", render: (val: any) => <StatusBadge status={val} /> },
             { key: "activeAmount", label: "Amount", render: (val: any) => formatCurrency(val) },
-            { key: "pickupDateTimeUtc", label: "Date", render: (val: any, row: any) => formatLocalDateTime(val, row.pickupTimezone) },
+            { key: "pickupDateTimeLocal", label: "Date" },
           ]}
-          data={bookings}
+          data={bookings.map((booking) => ({
+            ...booking,
+            customerName: store.profiles.find((profile) => profile.id === booking.customerProfileId)?.fullName ?? booking.customerProfileId,
+            operatorName:
+              store.operators.find((operator) => operator.id === booking.operatorId)?.companyName ?? "Unassigned",
+            vehicleName: booking.requestedVehicleCategory ?? "TBD",
+            activeAmount: booking.finalAmount ?? booking.quotedAmount ?? 0,
+          }))}
         />
       )}
     </DashboardShell>

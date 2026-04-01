@@ -1,13 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { Navbar } from "@/components/navbar"
+import { useSearchParams } from "next/navigation"
+import Navbar from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Check, ArrowRight } from "lucide-react"
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow"
 import { Button } from "@/components/ui/button"
 
 export default function PendingReviewPage() {
+  const searchParams = useSearchParams()
+  const bookingId = searchParams.get("bookingId")
+
   return (
     <main className="min-h-screen bg-background pt-24">
       <Navbar />
@@ -27,6 +31,7 @@ export default function PendingReviewPage() {
             <p className="mt-4 text-base leading-7 text-muted-foreground">
               A GroupRide specialist is reviewing operator availability and building the cleanest option for your group.
             </p>
+            {bookingId ? <p className="mt-3 text-sm text-muted-foreground">Reference: {bookingId}</p> : null}
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -77,7 +82,7 @@ export default function PendingReviewPage() {
         </div>
         <div className="mx-auto mt-8 flex max-w-3xl justify-center">
           <Button asChild size="lg">
-            <Link href="/booking/status">
+            <Link href={bookingId ? `/booking/status?id=${bookingId}` : "/booking/status"}>
               View status
               <ArrowRight className="h-4 w-4" />
             </Link>

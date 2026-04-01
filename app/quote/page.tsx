@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer"
 import { ArrowRight } from "lucide-react"
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow"
 import { Button } from "@/components/ui/button"
+import { buildQuotePricingInput, calculateQuoteBreakdown } from "@/lib/services/quote-calculator"
 
 interface Vehicle {
   id: string
@@ -24,37 +25,62 @@ function QuoteContent() {
   const passengers = parseInt(searchParams.get("passengers") || "12")
   const pickup = searchParams.get("pickup") || ""
   const dropoff = searchParams.get("dropoff") || ""
-  const distance = parseInt(searchParams.get("distance") || "0")
+  const pickupPlace = searchParams.get("pickup_place") || ""
+  const dropoffPlace = searchParams.get("dropoff_place") || ""
+  const distance = parseFloat(searchParams.get("distance") || "0")
   const duration = parseInt(searchParams.get("duration") || "0")
+  const datetime = searchParams.get("datetime") || ""
+  const routeText = searchParams.get("route_text") || `${pickup} to ${dropoff}`
   
   // Show charter flight only for long-distance trips (>250 miles or >4 hours)
   const isLongDistance = distance > 250 || duration > 240
 
   const vehicles: Vehicle[] = [
-    {
-      id: "sprinter",
+    ...[
+      {
+        id: "sprinter",
       name: "sprinter van",
       description: "seats 10-15, ideal for small groups",
-      price: "$220",
+      price: "",
       isBestFit: passengers <= 14,
       features: ["comfortable seating", "luggage space"],
-    },
-    {
-      id: "minibus",
+      },
+      {
+        id: "minibus",
       name: "mini bus",
       description: "seats 20-35, more space",
-      price: "$350",
+      price: "",
       isBestFit: passengers >= 15 && passengers <= 35,
       features: ["extra legroom", "onboard restroom"],
-    },
-    {
-      id: "charter",
+      },
+      {
+        id: "charter",
       name: "charter bus",
       description: "seats 36-56, full amenities",
-      price: "$650",
+      price: "",
       isBestFit: passengers > 35,
       features: ["wifi available", "climate control"],
-    },
+      },
+    ].map((vehicle) => {
+      const vehicleCategory = vehicle.id === "charter" ? "charter_bus" : (vehicle.id as "sprinter" | "minibus")
+      const breakdown = calculateQuoteBreakdown(
+        buildQuotePricingInput({
+          vehicleCategory,
+          tripType: "one_way",
+          distanceMiles: distance,
+          driveTimeMinutes: duration,
+          routeText,
+          pickupLabel: pickup,
+          dropoffLabel: dropoff,
+          pickupDateTimeLocal: datetime,
+        }),
+      )
+
+      return {
+        ...vehicle,
+        price: `$${breakdown.total.toFixed(0)}`,
+      }
+    }),
     ...(isLongDistance ? [{
       id: "flight",
       name: "charter flight",
@@ -75,7 +101,17 @@ function QuoteContent() {
         pickup,
         dropoff,
         passengers: passengers.toString(),
+        datetime,
+        distance: distance.toString(),
+        duration: duration.toString(),
+        route_text: routeText,
       })
+      if (pickupPlace) {
+        params.set("pickup_place", pickupPlace)
+      }
+      if (dropoffPlace) {
+        params.set("dropoff_place", dropoffPlace)
+      }
       router.push(`/checkout?${params.toString()}`)
     }
   }
@@ -94,6 +130,11 @@ function QuoteContent() {
               {passengers} passengers
               {pickup && dropoff ? ` • ${pickup} to ${dropoff}` : ""}
             </p>
+            {distance > 0 || duration > 0 ? (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {distance.toFixed(1)} miles • {duration} min drive
+              </p>
+            ) : null}
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">

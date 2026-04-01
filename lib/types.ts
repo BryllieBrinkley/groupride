@@ -1,94 +1,79 @@
-export type Role = "admin" | "operator" | "customer";
+export type Role = "customer" | "operator" | "admin";
+
+export type ProfileStatus = "active" | "invited" | "suspended";
+export type OperatorStatus = "pending" | "active" | "suspended";
+export type DriverStatus = "active" | "inactive";
+export type VehicleStatus = "active" | "inactive" | "maintenance";
 
 export type TripType = "one_way" | "round_trip" | "hourly";
 export type TripIntent = "airport" | "event" | "team" | "corporate" | "other";
-
-export type VehicleCategory = "suv" | "sprinter" | "minibus";
+export type VehicleCategory = "suv" | "sprinter" | "minibus" | "charter_bus";
 
 export type BookingStatus =
-  | "draft"
+  | "pending"
   | "quoted"
-  | "requested"
-  | "operator_offer_open"
-  | "manual_review_pending"
-  | "customer_approval_required"
-  | "operator_accepted"
-  | "payment_processing"
-  | "payment_action_required"
+  | "awaiting_payment"
   | "confirmed"
-  | "offer_expired"
-  | "no_operator_available"
-  | "cancelled"
-  | "refunded"
-  | "closed_unfulfilled";
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
-export type OfferStatus = "pending" | "accepted" | "declined" | "expired" | "closed";
-
-export type ReviewTrigger =
-  | "capacity_overflow"
-  | "distance_limit"
-  | "stop_limit"
-  | "high_value"
-  | "hourly_trip"
-  | "coverage_gap"
-  | "no_operator_available"
-  | "offer_expired";
-
-export type PaymentStatus =
-  | "not_collected"
-  | "payment_method_saved"
-  | "processing"
-  | "requires_action"
-  | "paid"
-  | "refunded";
-
-export type CancellationOutcome = "full_refund" | "half_refund" | "no_refund" | "no_charge";
-
-export type BookingChannel = "web";
-
-export type CoverageStatus = "covered" | "launch_market" | "outside_coverage";
+export type QuoteStatus = "draft" | "sent" | "accepted" | "expired" | "rejected" | "cancelled";
+export type PaymentStatus = "pending" | "requires_action" | "succeeded" | "failed" | "refunded";
+export type PayoutStatus = "pending" | "in_transit" | "paid" | "failed" | "cancelled";
+export type NotificationChannel = "email" | "sms" | "in_app";
+export type NotificationStatus = "queued" | "sent" | "failed" | "read";
+export type ReviewStatus = "pending" | "published" | "hidden";
+export type SupportThreadStatus = "open" | "pending" | "resolved" | "closed";
+export type PaymentProvider = "stripe" | "demo";
+export type PayoutProvider = "stripe_connect" | "demo";
+export type UploadedDocumentType = "insurance" | "license" | "registration" | "w9" | "other";
+export type QuoteSource = "admin" | "operator" | "system";
 
 export interface SessionUser {
   id: string;
+  profileId: string;
   role: Role;
   email: string;
   name: string;
   operatorId?: string;
 }
 
-export interface AppUser extends SessionUser {
-  phone?: string;
-  password: string;
-  customerId?: string;
-}
-
-export interface CustomerProfile {
+export interface AuthAccount {
   id: string;
-  userId?: string;
-  name: string;
+  profileId: string;
   email: string;
-  phone: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface ServiceArea {
+export interface Profile {
   id: string;
-  operatorId: string;
-  label: string;
-  city: string;
-  state: string;
-  latitude: number;
-  longitude: number;
-  radiusMiles: number;
-  isLaunchMarket: boolean;
+  role: Role;
+  fullName: string;
+  email: string;
+  phone?: string;
+  status: ProfileStatus;
+  avatarUrl?: string;
+  defaultOperatorId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Operator {
   id: string;
+  profileId: string;
   companyName: string;
-  serviceAreaIds: string[];
+  legalBusinessName?: string;
+  status: OperatorStatus;
   rating: number;
-  status: "approved" | "pending" | "inactive";
+  completedTrips: number;
+  payoutAccountConnected: boolean;
+  serviceAreas: string[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Vehicle {
@@ -97,18 +82,39 @@ export interface Vehicle {
   name: string;
   category: VehicleCategory;
   capacity: number;
-  active: boolean;
+  luggageCapacity: number;
   quantity: number;
+  status: VehicleStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Driver {
+  id: string;
+  operatorId: string;
+  profileId?: string;
+  fullName: string;
+  phone?: string;
+  licenseNumber?: string;
+  status: DriverStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PricingRule {
   id: string;
+  operatorId?: string;
   category: VehicleCategory;
+  name: string;
+  region: string;
   baseFare: number;
   ratePerMile: number;
   minimumFare: number;
   hourlyRate: number;
   minimumHours: number;
+  status: "active" | "inactive";
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LocationInput {
@@ -125,10 +131,68 @@ export interface ResolvedLocation extends LocationInput {
   timezone: string;
 }
 
+export interface GooglePlaceSelection {
+  displayLabel: string;
+  formattedAddress: string;
+  placeId: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface RouteMetrics {
+  distanceMiles: number;
+  driveTimeMinutes: number;
+  formattedRouteText: string;
+  pickupLat: number;
+  pickupLng: number;
+  dropoffLat: number;
+  dropoffLng: number;
+}
+
+export interface QuotePricingInput {
+  tripType: TripType;
+  baseFare: number;
+  perMileRate: number;
+  hourlyRate: number;
+  minimumCharge: number;
+  distanceMiles: number;
+  driveTimeMinutes: number;
+  airportSurcharge?: number;
+  luggageCount?: number;
+  luggageSurchargePerBag?: number;
+  tolls?: number;
+  lateNightFee?: number;
+}
+
+export interface QuotePricingBreakdown {
+  subtotal: number;
+  total: number;
+  baseFare: number;
+  mileageCharge: number;
+  hourlyCharge: number;
+  airportSurcharge: number;
+  luggageSurcharge: number;
+  tolls: number;
+  lateNightFee: number;
+  minimumApplied: boolean;
+}
+
 export interface BookingStop {
   id: string;
+  bookingId: string;
   order: number;
   location: ResolvedLocation;
+  createdAt: string;
+}
+
+export interface BookingPassenger {
+  id: string;
+  bookingId: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  seatLabel?: string;
+  createdAt: string;
 }
 
 export interface TripRequestInput {
@@ -156,6 +220,13 @@ export interface TripRequestInput {
   password?: string;
   selectedVehicleCategory?: VehicleCategory;
   paymentMethodToken?: string;
+  distanceMiles?: number;
+  driveTimeMinutes?: number;
+  formattedRouteText?: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  dropoffLat?: number;
+  dropoffLng?: number;
 }
 
 export interface RouteEstimate {
@@ -163,7 +234,18 @@ export interface RouteEstimate {
   estimatedDurationMinutes: number;
   pickup: ResolvedLocation;
   dropoff: ResolvedLocation;
-  stops: BookingStop[];
+  stops: Array<{
+    id: string;
+    order: number;
+    location: ResolvedLocation;
+  }>;
+}
+
+export interface VehicleChoice {
+  category: VehicleCategory;
+  amount: number;
+  badge: "Best option" | "More room" | "Budget-friendly";
+  reason: string;
 }
 
 export interface QuoteResult {
@@ -174,148 +256,220 @@ export interface QuoteResult {
   serviceFee: number;
   minimumApplied: boolean;
   route: RouteEstimate;
-  reviewTriggers: ReviewTrigger[];
-  coverageStatus: CoverageStatus;
-  matchedOperatorIds: string[];
-  eligibleOperatorIds: string[];
-  isLaunchMarket: boolean;
   notes: string[];
   vehicleChoices: VehicleChoice[];
 }
 
-export interface VehicleChoice {
-  category: VehicleCategory;
-  amount: number;
-  badge: "Best option" | "More room" | "Budget-friendly";
-  reason: string;
-  coverageStatus: CoverageStatus;
-  matchedOperatorIds: string[];
-  eligibleOperatorIds: string[];
-  reviewTriggers: ReviewTrigger[];
-  isLaunchMarket: boolean;
-}
-
-export interface PaymentMethodRecord {
-  id: string;
-  bookingId: string;
-  customerEmail: string;
-  provider: "demo" | "stripe";
-  providerPaymentMethodId: string;
-  status: "saved" | "failed";
-  createdAt: string;
-}
-
-export interface PaymentAttempt {
-  id: string;
-  bookingId: string;
-  amount: number;
-  status: PaymentStatus;
-  provider: "demo" | "stripe";
-  providerIntentId: string;
-  failureReason?: string;
-  createdAt: string;
-}
-
-export interface BookingOffer {
-  id: string;
-  bookingId: string;
-  operatorId: string;
-  vehicleCategory: VehicleCategory;
-  status: OfferStatus;
-  createdAt: string;
-  expiresAt: string;
-  actedAt?: string;
-}
-
 export interface Booking {
   id: string;
-  channel: BookingChannel;
+  reference: string;
   customerProfileId: string;
-  customerUserId?: string;
-  tripIntent?: TripIntent;
-  planningHelp?: boolean;
-  conciergeTrip?: boolean;
-  arrivingByFlight?: boolean;
-  flightNumber?: string;
-  flightArrivalTime?: string;
-  multiDay?: boolean;
-  needsReturnTrip?: boolean;
+  operatorId?: string;
+  vehicleId?: string;
+  driverId?: string;
+  acceptedQuoteId?: string;
+  status: BookingStatus;
   tripType: TripType;
+  tripIntent?: TripIntent;
   pickupLocation: ResolvedLocation;
   dropoffLocation: ResolvedLocation;
-  stops: BookingStop[];
-  pickupDateTimeUtc: string;
+  distanceMiles?: number;
+  driveTimeMinutes?: number;
+  formattedRouteText?: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  dropoffLat?: number;
+  dropoffLng?: number;
   pickupDateTimeLocal: string;
-  returnDateTimeUtc?: string;
+  pickupDateTimeUtc: string;
   returnDateTimeLocal?: string;
-  pickupTimezone: string;
+  returnDateTimeUtc?: string;
   passengers: number;
   luggageCount: number;
+  requestedVehicleCategory?: VehicleCategory;
+  quotedAmount?: number;
+  finalAmount?: number;
   notes?: string;
-  vehicleCategory: VehicleCategory;
-  priceLockedAmount: number;
-  activeAmount: number;
-  distanceMiles: number;
-  estimatedDurationMinutes: number;
-  serviceFee: number;
-  reviewTriggers: ReviewTrigger[];
-  coverageStatus: CoverageStatus;
-  status: BookingStatus;
-  paymentStatus: PaymentStatus;
-  matchedOperatorIds: string[];
-  eligibleOperatorIds: string[];
-  selectedOperatorId?: string;
-  selectedOfferId?: string;
-  offerExpiresAt?: string;
-  priceOverrideReason?: string;
-  approvalToken?: string;
-  paymentRecoveryToken?: string;
+  conciergeTrip?: boolean;
+  paymentIntentId?: string;
+  paymentStatus?: PaymentStatus;
+  completedAt?: string;
+  cancelledAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface NotificationLog {
+export interface Quote {
   id: string;
-  bookingId?: string;
-  type:
-    | "request_received"
-    | "manual_review_received"
-    | "revised_quote_needed"
-    | "operator_offer"
-    | "operator_accepted"
-    | "payment_action_required"
-    | "booking_confirmed"
-    | "booking_cancelled"
-    | "refund_processed"
-    | "booking_unfulfilled";
-  recipient: string;
-  channel: "email";
-  subject: string;
-  sentAt: string;
+  bookingId: string;
+  operatorId?: string;
+  createdByProfileId: string;
+  source: QuoteSource;
+  vehicleCategory: VehicleCategory;
+  vehicleId?: string;
+  amount: number;
+  depositAmount?: number;
+  serviceFee: number;
+  notes?: string;
+  status: QuoteStatus;
+  expiresAt?: string;
+  acceptedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface AuditLog {
+export interface Payment {
+  id: string;
+  bookingId: string;
+  quoteId?: string;
+  customerProfileId: string;
+  provider: PaymentProvider;
+  paymentIntentId?: string;
+  paymentMethodId?: string;
+  amount: number;
+  currency: "usd";
+  status: PaymentStatus;
+  refundAmount?: number;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Payout {
+  id: string;
+  bookingId: string;
+  operatorId: string;
+  provider: PayoutProvider;
+  providerTransferId?: string;
+  grossAmount: number;
+  platformFeeAmount: number;
+  payoutAmount: number;
+  status: PayoutStatus;
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationRecord {
+  id: string;
+  profileId?: string;
+  bookingId?: string;
+  quoteId?: string;
+  payoutId?: string;
+  type:
+    | "booking_created"
+    | "booking_status_updated"
+    | "quote_created"
+    | "quote_accepted"
+    | "payment_requires_action"
+    | "payment_succeeded"
+    | "payout_updated"
+    | "support_thread_updated";
+  title: string;
+  message: string;
+  channel: NotificationChannel;
+  recipient: string;
+  status: NotificationStatus;
+  createdAt: string;
+  sentAt?: string;
+  readAt?: string;
+}
+
+export interface SupportThread {
   id: string;
   bookingId?: string;
-  actor: string;
-  action: string;
-  details: string;
+  profileId: string;
+  subject: string;
+  status: SupportThreadStatus;
+  lastMessageAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Review {
+  id: string;
+  bookingId: string;
+  customerProfileId: string;
+  operatorId: string;
+  rating: number;
+  title?: string;
+  body?: string;
+  status: ReviewStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UploadedDocument {
+  id: string;
+  profileId?: string;
+  operatorId?: string;
+  driverId?: string;
+  type: UploadedDocumentType;
+  fileName: string;
+  storagePath: string;
+  mimeType: string;
   createdAt: string;
 }
 
 export interface DemoStore {
-  users: AppUser[];
-  customers: CustomerProfile[];
+  authAccounts: AuthAccount[];
+  profiles: Profile[];
   operators: Operator[];
-  serviceAreas: ServiceArea[];
   vehicles: Vehicle[];
-  pricingRules: PricingRule[];
+  drivers: Driver[];
   bookings: Booking[];
-  offers: BookingOffer[];
-  paymentMethods: PaymentMethodRecord[];
-  paymentAttempts: PaymentAttempt[];
-  notifications: NotificationLog[];
-  audits: AuditLog[];
+  bookingPassengers: BookingPassenger[];
+  bookingStops: BookingStop[];
+  quotes: Quote[];
+  payments: Payment[];
+  payouts: Payout[];
+  notifications: NotificationRecord[];
+  supportThreads: SupportThread[];
+  reviews: Review[];
+  pricingRules: PricingRule[];
+  uploadedDocuments: UploadedDocument[];
+}
+
+export interface BookingWithRelations {
+  booking: Booking;
+  customer: Profile | null;
+  operator: Operator | null;
+  vehicle: Vehicle | null;
+  driver: Driver | null;
+  quotes: Quote[];
+  payment: Payment | null;
+  payout: Payout | null;
+  passengers: BookingPassenger[];
+  stops: BookingStop[];
+}
+
+export interface OperatorSummary {
+  operator: Operator;
+  profile: Profile | null;
+  vehicles: Vehicle[];
+  drivers: Driver[];
+}
+
+export interface CustomerDashboardMetrics {
+  totalBookings: number;
+  activeBookings: number;
+  completedBookings: number;
+  totalSpend: number;
+}
+
+export interface OperatorDashboardMetrics {
+  pendingQuotes: number;
+  assignedTrips: number;
+  completedTrips: number;
+  pendingPayouts: number;
+}
+
+export interface AdminDashboardMetrics {
+  totalBookings: number;
+  pendingBookings: number;
+  openQuotes: number;
+  confirmedRevenue: number;
+  activeOperators: number;
 }
 
 export interface DashboardMetrics {
@@ -331,12 +485,8 @@ export interface LoginInput {
   password: string;
 }
 
-export interface QuoteApprovalInput {
-  token: string;
-}
-
 export interface AdminReviewInput {
-  action: "route_offers" | "close_unfulfilled" | "mark_no_supply";
+  action: "request_quote" | "cancel_booking" | "mark_confirmed";
 }
 
 export interface PriceOverrideInput {
@@ -344,9 +494,13 @@ export interface PriceOverrideInput {
   reason: string;
 }
 
+export interface QuoteApprovalInput {
+  quoteId: string;
+}
+
 export interface PaymentCaptureResult {
   paymentStatus: PaymentStatus;
   paymentIntentId: string;
-  recoveryToken?: string;
+  clientSecret?: string;
   failureReason?: string;
 }

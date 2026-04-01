@@ -11,14 +11,14 @@ import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth";
-import { getDashboardMetrics, listAdminBookings } from "@/lib/services/bookings";
+import { getAdminDashboard } from "@/lib/services/dashboard";
 import { formatCurrency } from "@/lib/utils";
 
 
 export default async function AdminPage() {
   await requireRole(["admin"]);
-  const metrics = getDashboardMetrics();
-  const queue = listAdminBookings().slice(0, 6);
+  const { metrics, bookings } = getAdminDashboard();
+  const queue = bookings.slice(0, 6);
   const isLoading = false; // Replace with actual loading state if needed
 
   return (
@@ -49,10 +49,10 @@ export default async function AdminPage() {
       }
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-8">
-        <StatCard label="Trip requests" value={`${metrics.totalRequests}`} />
-        <StatCard label="Needs review" value={`${metrics.pendingReview}`} />
-        <StatCard label="Open operator offers" value={`${metrics.openOffers}`} />
-        <StatCard label="Booked volume" value={formatCurrency(metrics.grossBookedRevenue)} />
+        <StatCard label="Trip requests" value={`${metrics.totalBookings}`} />
+        <StatCard label="Needs review" value={`${metrics.pendingBookings}`} />
+        <StatCard label="Open quotes" value={`${metrics.openQuotes}`} />
+        <StatCard label="Booked volume" value={formatCurrency(metrics.confirmedRevenue)} />
       </div>
 
       <FilterBar>

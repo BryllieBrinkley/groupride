@@ -17,35 +17,26 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition();
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  setError(null);
+    event.preventDefault();
+    setError(null);
 
-  startTransition(async () => {
-    const normalizedEmail = email.trim().toLowerCase();
+    startTransition(async () => {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    // Platform admin
-    if (
-      normalizedEmail === "admin@groupride.app" &&
-      password === "Admin123!"
-    ) {
-      router.push("/admin");
+      const payload = (await response.json()) as { error?: string; redirectTo?: string };
+      if (!response.ok || !payload.redirectTo) {
+        setError(payload.error ?? "Invalid email or password.");
+        return;
+      }
+
+      router.push(payload.redirectTo);
       router.refresh();
-      return;
-    }
-
-    // Transportation partner
-    if (
-      normalizedEmail === "ops@charlottemobility.com" &&
-      password === "Operator123!"
-    ) {
-      router.push("/operators");
-      router.refresh();
-      return;
-    }
-
-    setError("Invalid email or password.");
-  });
-};;
+    });
+  };
 
   return (
     <Card className="border-border bg-card">

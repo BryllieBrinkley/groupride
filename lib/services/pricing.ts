@@ -1,35 +1,32 @@
+import { getStore } from "@/lib/data/demo-store";
 import type { PricingRule, QuoteResult, TripRequestInput, VehicleCategory } from "@/lib/types";
 
 const SERVICE_FEE = 25;
-const MAX_AUTO_DISTANCE_MILES = 50;
-const MAX_AUTO_STOPS = 3;
-const MAX_AUTO_PRICE = 1000;
-const MAX_AUTO_PASSENGERS = 35;
 
 export function getRecommendedVehicle(passengers: number): VehicleCategory {
-  if (passengers <= 6) {
-    return "suv";
-  }
-  if (passengers <= 15) {
-    return "sprinter";
-  }
+  if (passengers <= 6) return "suv";
+  if (passengers <= 15) return "sprinter";
   return "minibus";
 }
 
 export function getFeasibleVehicleCategories(passengers: number): VehicleCategory[] {
-  if (passengers <= 6) {
-    return ["suv", "sprinter", "minibus"];
+  if (passengers <= 6) return ["suv", "sprinter", "minibus"];
+  if (passengers <= 15) return ["sprinter", "minibus"];
+  return ["minibus", "charter_bus"];
+}
+
+export function getPricingRuleForCategory(category: VehicleCategory): PricingRule {
+  const rule = getStore().pricingRules.find((entry) => entry.category === category && entry.status === "active");
+  if (!rule) {
+    throw new Error(`Missing pricing rule for ${category}`);
   }
-  if (passengers <= 15) {
-    return ["sprinter", "minibus"];
-  }
-  return ["minibus"];
+  return rule;
 }
 
 export function buildQuote({
   input,
   pricingRule,
-  distanceMiles
+  distanceMiles,
 }: {
   input: TripRequestInput;
   pricingRule: PricingRule;
@@ -37,56 +34,32 @@ export function buildQuote({
 }): Pick<QuoteResult, "amount" | "baseFare" | "perMileCharge" | "serviceFee" | "minimumApplied" | "notes"> {
   if (input.tripType === "hourly") {
     const hours = Math.max(pricingRule.minimumHours, 4);
-    const amount = hours * pricingRule.hourlyRate + SERVICE_FEE;
+    const baseFare = hours * pricingRule.hourlyRate;
     return {
-      amount,
-      baseFare: hours * pricingRule.hourlyRate,
+      amount: baseFare + SERVICE_FEE,
+      baseFare,
       perMileCharge: 0,
       serviceFee: SERVICE_FEE,
       minimumApplied: false,
-      notes: [`Hourly trips are quoted using a ${hours}-hour minimum and routed to admin review.`]
+      notes: [`Hourly trips are priced with a ${hours}-hour minimum.`],
     };
   }
 
-  const tripMultiplier = input.tripType === "round_trip" ? 2 : 1;
-  const rawBase = pricingRule.baseFare * tripMultiplier;
-  const rawMileage = distanceMiles * pricingRule.ratePerMile * tripMultiplier;
-  const rawAmount = rawBase + rawMileage + SERVICE_FEE;
-  const minimumApplied = rawAmount < pricingRule.minimumFare;
-  const amount = Math.max(pricingRule.minimumFare, rawAmount);
+  const multiplier = input.tripType === "round_trip" ? 2 : 1;
+  const baseFare = pricingRule.baseFare * multiplier;
+  const perMileCharge = Math.round(distanceMiles * pricingRule.ratePerMile * multiplier);
+  const subtotal = baseFare + perMileCharge;
+  const minimumApplied = subtotal < pricingRule.minimumFare;
+  const amount = Math.max(pricingRule.minimumFare, subtotal) + SERVICE_FEE;
 
   return {
-    amount: Math.round(amount),
-    baseFare: Math.round(rawBase),
-    perMileCharge: Math.round(rawMileage),
+    amount,
+    baseFare,
+    perMileCharge,
     serviceFee: SERVICE_FEE,
     minimumApplied,
-    notes: minimumApplied ? ["A vehicle minimum was applied to keep the trip serviceable."] : []
+    notes: minimumApplied ? ["A service minimum was applied."] : [],
   };
-}
-
-export function determineReviewTriggers(input: TripRequestInput, amount: number, distanceMiles: number) {
-  const triggers = new Set<string>();
-
-  if (input.passengers > MAX_AUTO_PASSENGERS) {
-    triggers.add("capacity_overflow");
-  }
-  if (distanceMiles > MAX_AUTO_DISTANCE_MILES) {
-    triggers.add("distance_limit");
-  }
-  if (input.stops.length > MAX_AUTO_STOPS) {
-    triggers.add("stop_limit");
-  }
-  if (amount > MAX_AUTO_PRICE) {
-    triggers.add("high_value");
-  }
-  if (input.tripType === "hourly") {
-    triggers.add("hourly_trip");
-  }
-
-  return Array.from(triggers) as Array<
-    "capacity_overflow" | "distance_limit" | "stop_limit" | "high_value" | "hourly_trip"
-  >;
 }
 
 export function getServiceFee() {

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Navbar } from "@/components/navbar"
+import Navbar from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ArrowRight } from "lucide-react"
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow"
@@ -10,6 +10,7 @@ import { FormField } from "@/components/shared/FormField"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import type { TripRequestInput } from "@/lib/types"
 
 export default function QuoteRequestPage() {
   const router = useRouter()
@@ -18,12 +19,42 @@ export default function QuoteRequestPage() {
   const [phone, setPhone] = useState("")
   const [details, setDetails] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 800))
-    router.push("/quote/pending")
+    setError(null)
+
+    const payload: TripRequestInput = {
+      tripType: "one_way",
+      tripIntent: "other",
+      pickupLocation: { addressLine: "Custom itinerary", city: "Charlotte", state: "NC" },
+      dropoffLocation: { addressLine: "Custom destination", city: "Charlotte", state: "NC" },
+      stops: [],
+      pickupDateTimeLocal: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().slice(0, 16),
+      passengers: 1,
+      luggageCount: 0,
+      notes: details,
+      contactName: name,
+      contactEmail: email,
+      contactPhone: phone,
+    }
+
+    const response = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    const result = (await response.json()) as { error?: string; booking?: { id: string } }
+    setIsSubmitting(false)
+
+    if (!response.ok || !result.booking) {
+      setError(result.error ?? "Unable to submit your request.")
+      return
+    }
+
+    router.push(`/quote/pending?bookingId=${result.booking.id}`)
   }
 
   return (
@@ -86,6 +117,7 @@ export default function QuoteRequestPage() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               )}
             </Button>
+            {error ? <p className="text-sm text-[#8c5d50]">{error}</p> : null}
           </form>
         </div>
       </section>

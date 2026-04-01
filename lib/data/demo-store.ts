@@ -1,17 +1,21 @@
 import type {
-  AppUser,
-  AuditLog,
+  AuthAccount,
   Booking,
-  BookingOffer,
-  CustomerProfile,
+  BookingPassenger,
+  BookingStop,
   DemoStore,
-  NotificationLog,
+  Driver,
+  NotificationRecord,
   Operator,
-  PaymentAttempt,
-  PaymentMethodRecord,
+  Payment,
+  Payout,
   PricingRule,
-  ServiceArea,
-  Vehicle
+  Profile,
+  Quote,
+  Review,
+  SupportThread,
+  UploadedDocument,
+  Vehicle,
 } from "@/lib/types";
 import { addHours, makeId, nowIso } from "@/lib/utils";
 import { resolveFallbackLocation } from "@/lib/geo";
@@ -21,378 +25,543 @@ declare global {
   var __GROUPRIDE_STORE__: DemoStore | undefined;
 }
 
-function createPricingRules(): PricingRule[] {
+function createPricingRules(createdAt: string): PricingRule[] {
   return [
     {
-      id: "price_suv",
+      id: "pricing_suv_default",
       category: "suv",
-      baseFare: 35,
-      ratePerMile: 2,
-      minimumFare: 120,
-      hourlyRate: 90,
-      minimumHours: 2
-    },
-    {
-      id: "price_sprinter",
-      category: "sprinter",
-      baseFare: 55,
+      name: "Executive SUV",
+      region: "Charlotte",
+      baseFare: 95,
       ratePerMile: 3,
-      minimumFare: 220,
-      hourlyRate: 135,
-      minimumHours: 3
+      minimumFare: 180,
+      hourlyRate: 110,
+      minimumHours: 2,
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
     },
     {
-      id: "price_minibus",
-      category: "minibus",
-      baseFare: 85,
+      id: "pricing_sprinter_default",
+      category: "sprinter",
+      name: "Sprinter Van",
+      region: "Charlotte",
+      baseFare: 160,
       ratePerMile: 4,
-      minimumFare: 350,
-      hourlyRate: 185,
-      minimumHours: 4
-    }
+      minimumFare: 320,
+      hourlyRate: 165,
+      minimumHours: 3,
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: "pricing_minibus_default",
+      category: "minibus",
+      name: "Mini Bus",
+      region: "Charlotte",
+      baseFare: 220,
+      ratePerMile: 5,
+      minimumFare: 480,
+      hourlyRate: 210,
+      minimumHours: 4,
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
   ];
 }
 
 function buildInitialStore(): DemoStore {
   const createdAt = nowIso();
 
-  const users: AppUser[] = [
+  const profiles: Profile[] = [
     {
-      id: "user_admin_1",
+      id: "profile_admin_1",
       role: "admin",
+      fullName: "Ops Admin",
       email: "admin@groupride.app",
-      name: "Ops Admin",
-      password: "Admin123!"
+      phone: "704-555-0100",
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
     },
     {
-      id: "user_operator_1",
+      id: "profile_operator_1",
       role: "operator",
+      fullName: "Charlotte Mobility Ops",
       email: "ops@charlottemobility.com",
-      name: "Charlotte Mobility Ops",
-      password: "Operator123!",
-      operatorId: "operator_1"
+      phone: "704-555-0111",
+      status: "active",
+      defaultOperatorId: "operator_1",
+      createdAt,
+      updatedAt: createdAt,
     },
     {
-      id: "user_operator_2",
+      id: "profile_operator_2",
       role: "operator",
+      fullName: "Queen City Charter Dispatch",
       email: "dispatch@queencitycharter.com",
-      name: "Queen City Charter Dispatch",
-      password: "Operator123!",
-      operatorId: "operator_2"
+      phone: "704-555-0122",
+      status: "active",
+      defaultOperatorId: "operator_2",
+      createdAt,
+      updatedAt: createdAt,
     },
     {
-      id: "user_customer_1",
+      id: "profile_customer_1",
       role: "customer",
+      fullName: "Morgan Lee",
       email: "planner@acmeevents.com",
-      name: "Morgan Lee",
-      password: "Customer123!",
-      customerId: "customer_1"
-    }
+      phone: "704-555-0133",
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
   ];
 
-  const customers: CustomerProfile[] = [
+  const authAccounts: AuthAccount[] = [
     {
-      id: "customer_1",
-      userId: "user_customer_1",
-      name: "Morgan Lee",
+      id: "auth_admin_1",
+      profileId: "profile_admin_1",
+      email: "admin@groupride.app",
+      password: "Admin123!",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: "auth_operator_1",
+      profileId: "profile_operator_1",
+      email: "ops@charlottemobility.com",
+      password: "Operator123!",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: "auth_customer_1",
+      profileId: "profile_customer_1",
       email: "planner@acmeevents.com",
-      phone: "704-555-0110"
-    }
+      password: "Customer123!",
+      createdAt,
+      updatedAt: createdAt,
+    },
   ];
 
   const operators: Operator[] = [
     {
       id: "operator_1",
+      profileId: "profile_operator_1",
       companyName: "Charlotte Mobility Co.",
-      serviceAreaIds: ["area_1"],
+      legalBusinessName: "Charlotte Mobility Co. LLC",
+      status: "active",
       rating: 4.9,
-      status: "approved",
-      createdAt
+      completedTrips: 182,
+      payoutAccountConnected: true,
+      serviceAreas: ["Charlotte", "Concord", "Fort Mill"],
+      createdAt,
+      updatedAt: createdAt,
     },
     {
       id: "operator_2",
+      profileId: "profile_operator_2",
       companyName: "Queen City Charter",
-      serviceAreaIds: ["area_2"],
+      legalBusinessName: "Queen City Charter Inc.",
+      status: "active",
       rating: 4.8,
-      status: "approved",
-      createdAt
+      completedTrips: 119,
+      payoutAccountConnected: true,
+      serviceAreas: ["Charlotte", "Gastonia", "Greensboro"],
+      createdAt,
+      updatedAt: createdAt,
     },
-    {
-      id: "operator_3",
-      companyName: "Atlanta Event Transit",
-      serviceAreaIds: ["area_3"],
-      rating: 4.7,
-      status: "approved",
-      createdAt
-    }
-  ];
-
-  const serviceAreas: ServiceArea[] = [
-    {
-      id: "area_1",
-      operatorId: "operator_1",
-      label: "Charlotte Core",
-      city: "Charlotte",
-      state: "NC",
-      latitude: 35.2271,
-      longitude: -80.8431,
-      radiusMiles: 35,
-      isLaunchMarket: true
-    },
-    {
-      id: "area_2",
-      operatorId: "operator_2",
-      label: "Charlotte Regional",
-      city: "Charlotte",
-      state: "NC",
-      latitude: 35.1907,
-      longitude: -80.8464,
-      radiusMiles: 55,
-      isLaunchMarket: true
-    },
-    {
-      id: "area_3",
-      operatorId: "operator_3",
-      label: "Atlanta Metro",
-      city: "Atlanta",
-      state: "GA",
-      latitude: 33.749,
-      longitude: -84.388,
-      radiusMiles: 30,
-      isLaunchMarket: false
-    }
   ];
 
   const vehicles: Vehicle[] = [
-    { id: "vehicle_1", operatorId: "operator_1", name: "Black SUV Fleet", category: "suv", capacity: 6, active: true, quantity: 4 },
-    { id: "vehicle_2", operatorId: "operator_1", name: "Executive Sprinter", category: "sprinter", capacity: 14, active: true, quantity: 2 },
-    { id: "vehicle_3", operatorId: "operator_2", name: "Sprinter XL", category: "sprinter", capacity: 15, active: true, quantity: 3 },
-    { id: "vehicle_4", operatorId: "operator_2", name: "Charlotte Mini Coach", category: "minibus", capacity: 28, active: true, quantity: 2 },
-    { id: "vehicle_5", operatorId: "operator_3", name: "Atlanta Sprinter", category: "sprinter", capacity: 15, active: true, quantity: 2 }
+    {
+      id: "vehicle_1",
+      operatorId: "operator_1",
+      name: "Executive Sprinter",
+      category: "sprinter",
+      capacity: 14,
+      luggageCapacity: 12,
+      quantity: 2,
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: "vehicle_2",
+      operatorId: "operator_1",
+      name: "Black SUV Fleet",
+      category: "suv",
+      capacity: 6,
+      luggageCapacity: 6,
+      quantity: 4,
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: "vehicle_3",
+      operatorId: "operator_2",
+      name: "Charlotte Mini Coach",
+      category: "minibus",
+      capacity: 28,
+      luggageCapacity: 24,
+      quantity: 2,
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
   ];
 
-  const pickup1 = resolveFallbackLocation({
+  const drivers: Driver[] = [
+    {
+      id: "driver_1",
+      operatorId: "operator_1",
+      fullName: "Chris Holloway",
+      phone: "704-555-0200",
+      licenseNumber: "NC-DL-001",
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: "driver_2",
+      operatorId: "operator_2",
+      fullName: "Avery Collins",
+      phone: "704-555-0201",
+      licenseNumber: "NC-DL-002",
+      status: "active",
+      createdAt,
+      updatedAt: createdAt,
+    },
+  ];
+
+  const pickupAirport = resolveFallbackLocation({
     addressLine: "500 S Tryon St",
     city: "Charlotte",
     state: "NC",
-    postalCode: "28202"
+    postalCode: "28202",
   });
-  const dropoff1 = resolveFallbackLocation({
+  const dropoffAirport = resolveFallbackLocation({
     addressLine: "5501 Josh Birmingham Pkwy",
     city: "Charlotte",
     state: "NC",
-    postalCode: "28208"
+    postalCode: "28208",
   });
-  const pickup2 = resolveFallbackLocation({
-    addressLine: "1 NASCAR Plaza",
+  const pickupStadium = resolveFallbackLocation({
+    addressLine: "800 S Mint St",
     city: "Charlotte",
     state: "NC",
-    postalCode: "28202"
+    postalCode: "28202",
   });
-  const dropoff2 = resolveFallbackLocation({
-    addressLine: "1000 NC Music Factory Blvd",
+  const dropoffStadium = resolveFallbackLocation({
+    addressLine: "333 E Trade St",
     city: "Charlotte",
     state: "NC",
-    postalCode: "28206"
+    postalCode: "28202",
   });
-  const pickup3 = resolveFallbackLocation({
-    addressLine: "401 Biscayne Blvd",
-    city: "Miami",
-    state: "FL",
-    postalCode: "33132"
+  const pickupHotel = resolveFallbackLocation({
+    addressLine: "100 W Trade St",
+    city: "Charlotte",
+    state: "NC",
+    postalCode: "28202",
   });
-  const dropoff3 = resolveFallbackLocation({
-    addressLine: "100 Chopin Plaza",
-    city: "Miami",
-    state: "FL",
-    postalCode: "33131"
+  const dropoffHotel = resolveFallbackLocation({
+    addressLine: "501 S College St",
+    city: "Charlotte",
+    state: "NC",
+    postalCode: "28202",
   });
 
   const bookings: Booking[] = [
     {
-      id: "booking_confirmed_demo",
-      channel: "web",
-      customerProfileId: "customer_1",
-      customerUserId: "user_customer_1",
+      id: "booking_pending_1",
+      reference: "GR-1001",
+      customerProfileId: "profile_customer_1",
+      status: "pending",
       tripType: "one_way",
-      pickupLocation: pickup1,
-      dropoffLocation: dropoff1,
-      stops: [],
-      pickupDateTimeUtc: addHours(createdAt, 28),
-      pickupDateTimeLocal: addHours(createdAt, 28),
-      pickupTimezone: pickup1.timezone,
-      passengers: 10,
-      luggageCount: 8,
-      vehicleCategory: "sprinter",
-      priceLockedAmount: 278,
-      activeAmount: 278,
-      distanceMiles: 11.4,
-      estimatedDurationMinutes: 26,
-      serviceFee: 25,
-      reviewTriggers: [],
-      coverageStatus: "launch_market",
-      status: "confirmed",
-      paymentStatus: "paid",
-      matchedOperatorIds: ["operator_1", "operator_2"],
-      eligibleOperatorIds: ["operator_1", "operator_2"],
-      selectedOperatorId: "operator_1",
-      selectedOfferId: "offer_confirmed_demo",
-      createdAt,
-      updatedAt: createdAt
-    },
-    {
-      id: "booking_offer_demo",
-      channel: "web",
-      customerProfileId: "customer_1",
-      customerUserId: "user_customer_1",
-      tripType: "one_way",
-      pickupLocation: pickup2,
-      dropoffLocation: dropoff2,
-      stops: [],
-      pickupDateTimeUtc: addHours(createdAt, 52),
-      pickupDateTimeLocal: addHours(createdAt, 52),
-      pickupTimezone: pickup2.timezone,
-      passengers: 14,
+      tripIntent: "airport",
+      pickupLocation: pickupAirport,
+      dropoffLocation: dropoffAirport,
+      pickupDateTimeLocal: addHours(createdAt, 36),
+      pickupDateTimeUtc: addHours(createdAt, 36),
+      passengers: 12,
       luggageCount: 10,
-      vehicleCategory: "sprinter",
-      priceLockedAmount: 241,
-      activeAmount: 241,
-      distanceMiles: 7.2,
-      estimatedDurationMinutes: 22,
-      serviceFee: 25,
-      reviewTriggers: [],
-      coverageStatus: "launch_market",
-      status: "operator_offer_open",
-      paymentStatus: "payment_method_saved",
-      matchedOperatorIds: ["operator_1", "operator_2"],
-      eligibleOperatorIds: ["operator_1", "operator_2"],
-      offerExpiresAt: addHours(createdAt, 2),
+      requestedVehicleCategory: "sprinter",
+      notes: "Airport departure with luggage support.",
       createdAt,
-      updatedAt: createdAt
+      updatedAt: createdAt,
     },
     {
-      id: "booking_review_demo",
-      channel: "web",
-      customerProfileId: "customer_1",
-      customerUserId: "user_customer_1",
-      tripType: "hourly",
-      pickupLocation: pickup3,
-      dropoffLocation: dropoff3,
-      stops: [],
-      pickupDateTimeUtc: addHours(createdAt, 72),
-      pickupDateTimeLocal: addHours(createdAt, 72),
-      pickupTimezone: pickup3.timezone,
-      passengers: 18,
-      luggageCount: 6,
-      notes: "Corporate summit shuttle request.",
-      vehicleCategory: "minibus",
-      priceLockedAmount: 765,
-      activeAmount: 765,
-      distanceMiles: 4.2,
-      estimatedDurationMinutes: 18,
-      serviceFee: 25,
-      reviewTriggers: ["hourly_trip", "coverage_gap"],
-      coverageStatus: "outside_coverage",
-      status: "manual_review_pending",
-      paymentStatus: "payment_method_saved",
-      matchedOperatorIds: [],
-      eligibleOperatorIds: [],
-      createdAt,
-      updatedAt: createdAt
-    }
-  ];
-
-  const offers: BookingOffer[] = [
-    {
-      id: "offer_confirmed_demo",
-      bookingId: "booking_confirmed_demo",
+      id: "booking_quoted_1",
+      reference: "GR-1002",
+      customerProfileId: "profile_customer_1",
       operatorId: "operator_1",
-      vehicleCategory: "sprinter",
-      status: "accepted",
+      status: "quoted",
+      tripType: "one_way",
+      tripIntent: "event",
+      pickupLocation: pickupStadium,
+      dropoffLocation: dropoffStadium,
+      pickupDateTimeLocal: addHours(createdAt, 48),
+      pickupDateTimeUtc: addHours(createdAt, 48),
+      passengers: 24,
+      luggageCount: 2,
+      requestedVehicleCategory: "minibus",
+      quotedAmount: 540,
+      notes: "Game-day transfer.",
       createdAt,
-      expiresAt: addHours(createdAt, 2),
-      actedAt: createdAt
+      updatedAt: createdAt,
     },
     {
-      id: "offer_pending_demo_1",
-      bookingId: "booking_offer_demo",
+      id: "booking_confirmed_1",
+      reference: "GR-1003",
+      customerProfileId: "profile_customer_1",
       operatorId: "operator_1",
-      vehicleCategory: "sprinter",
-      status: "pending",
+      vehicleId: "vehicle_1",
+      driverId: "driver_1",
+      acceptedQuoteId: "quote_accepted_1",
+      status: "assigned",
+      tripType: "one_way",
+      tripIntent: "corporate",
+      pickupLocation: pickupHotel,
+      dropoffLocation: dropoffHotel,
+      pickupDateTimeLocal: addHours(createdAt, 12),
+      pickupDateTimeUtc: addHours(createdAt, 12),
+      passengers: 10,
+      luggageCount: 4,
+      requestedVehicleCategory: "sprinter",
+      quotedAmount: 385,
+      finalAmount: 385,
+      paymentIntentId: "pi_demo_confirmed_1",
+      paymentStatus: "succeeded",
       createdAt,
-      expiresAt: addHours(createdAt, 2)
+      updatedAt: createdAt,
     },
     {
-      id: "offer_pending_demo_2",
-      bookingId: "booking_offer_demo",
+      id: "booking_completed_1",
+      reference: "GR-1004",
+      customerProfileId: "profile_customer_1",
       operatorId: "operator_2",
-      vehicleCategory: "sprinter",
-      status: "pending",
+      vehicleId: "vehicle_3",
+      driverId: "driver_2",
+      acceptedQuoteId: "quote_accepted_2",
+      status: "completed",
+      tripType: "one_way",
+      tripIntent: "team",
+      pickupLocation: pickupHotel,
+      dropoffLocation: dropoffAirport,
+      pickupDateTimeLocal: addHours(createdAt, -96),
+      pickupDateTimeUtc: addHours(createdAt, -96),
+      passengers: 20,
+      luggageCount: 16,
+      requestedVehicleCategory: "minibus",
+      quotedAmount: 620,
+      finalAmount: 620,
+      paymentIntentId: "pi_demo_completed_1",
+      paymentStatus: "succeeded",
+      completedAt: addHours(createdAt, -95),
+      createdAt: addHours(createdAt, -120),
+      updatedAt: addHours(createdAt, -95),
+    },
+  ];
+
+  const bookingPassengers: BookingPassenger[] = [
+    { id: "bp_1", bookingId: "booking_pending_1", fullName: "Morgan Lee", email: "planner@acmeevents.com", createdAt },
+    { id: "bp_2", bookingId: "booking_confirmed_1", fullName: "Alex Tran", email: "alex@acmeevents.com", createdAt },
+  ];
+
+  const bookingStops: BookingStop[] = [
+    { id: "stop_1", bookingId: "booking_pending_1", order: 1, location: pickupAirport, createdAt },
+    { id: "stop_2", bookingId: "booking_pending_1", order: 2, location: dropoffAirport, createdAt },
+  ];
+
+  const quotes: Quote[] = [
+    {
+      id: "quote_sent_1",
+      bookingId: "booking_quoted_1",
+      operatorId: "operator_1",
+      createdByProfileId: "profile_operator_1",
+      source: "operator",
+      vehicleCategory: "minibus",
+      vehicleId: "vehicle_3",
+      amount: 540,
+      serviceFee: 35,
+      notes: "Premium event transfer with arrival buffer included.",
+      status: "sent",
+      expiresAt: addHours(createdAt, 24),
       createdAt,
-      expiresAt: addHours(createdAt, 2)
-    }
+      updatedAt: createdAt,
+    },
+    {
+      id: "quote_accepted_1",
+      bookingId: "booking_confirmed_1",
+      operatorId: "operator_1",
+      createdByProfileId: "profile_admin_1",
+      source: "admin",
+      vehicleCategory: "sprinter",
+      vehicleId: "vehicle_1",
+      amount: 385,
+      serviceFee: 25,
+      status: "accepted",
+      acceptedAt: addHours(createdAt, -1),
+      createdAt: addHours(createdAt, -6),
+      updatedAt: addHours(createdAt, -1),
+    },
+    {
+      id: "quote_accepted_2",
+      bookingId: "booking_completed_1",
+      operatorId: "operator_2",
+      createdByProfileId: "profile_admin_1",
+      source: "admin",
+      vehicleCategory: "minibus",
+      vehicleId: "vehicle_3",
+      amount: 620,
+      serviceFee: 25,
+      status: "accepted",
+      acceptedAt: addHours(createdAt, -118),
+      createdAt: addHours(createdAt, -121),
+      updatedAt: addHours(createdAt, -118),
+    },
   ];
 
-  const paymentMethods: PaymentMethodRecord[] = [
+  const payments: Payment[] = [
     {
-      id: "pm_demo_1",
-      bookingId: "booking_confirmed_demo",
-      customerEmail: "planner@acmeevents.com",
+      id: "payment_1",
+      bookingId: "booking_confirmed_1",
+      quoteId: "quote_accepted_1",
+      customerProfileId: "profile_customer_1",
       provider: "demo",
-      providerPaymentMethodId: "pm_demo_saved",
-      status: "saved",
-      createdAt
-    }
+      paymentIntentId: "pi_demo_confirmed_1",
+      paymentMethodId: "pm_demo_saved",
+      amount: 385,
+      currency: "usd",
+      status: "succeeded",
+      createdAt: addHours(createdAt, -1),
+      updatedAt: addHours(createdAt, -1),
+    },
+    {
+      id: "payment_2",
+      bookingId: "booking_completed_1",
+      quoteId: "quote_accepted_2",
+      customerProfileId: "profile_customer_1",
+      provider: "demo",
+      paymentIntentId: "pi_demo_completed_1",
+      paymentMethodId: "pm_demo_saved",
+      amount: 620,
+      currency: "usd",
+      status: "succeeded",
+      createdAt: addHours(createdAt, -118),
+      updatedAt: addHours(createdAt, -118),
+    },
   ];
 
-  const paymentAttempts: PaymentAttempt[] = [
+  const payouts: Payout[] = [
     {
-      id: "pay_attempt_1",
-      bookingId: "booking_confirmed_demo",
-      amount: 278,
+      id: "payout_1",
+      bookingId: "booking_completed_1",
+      operatorId: "operator_2",
+      provider: "demo",
+      grossAmount: 620,
+      platformFeeAmount: 62,
+      payoutAmount: 558,
       status: "paid",
-      provider: "demo",
-      providerIntentId: "pi_demo_1",
-      createdAt
-    }
+      paidAt: addHours(createdAt, -72),
+      createdAt: addHours(createdAt, -95),
+      updatedAt: addHours(createdAt, -72),
+    },
   ];
 
-  const notifications: NotificationLog[] = [
+  const notifications: NotificationRecord[] = [
     {
-      id: "notif_1",
-      bookingId: "booking_confirmed_demo",
-      type: "booking_confirmed",
-      recipient: "planner@acmeevents.com",
+      id: "notification_1",
+      profileId: "profile_customer_1",
+      bookingId: "booking_quoted_1",
+      quoteId: "quote_sent_1",
+      type: "quote_created",
+      title: "New quote ready",
+      message: "Your GroupRide quote is ready for review.",
       channel: "email",
-      subject: "Your GroupRide booking is confirmed",
-      sentAt: createdAt
-    }
+      recipient: "planner@acmeevents.com",
+      status: "sent",
+      createdAt,
+      sentAt: createdAt,
+    },
+    {
+      id: "notification_2",
+      profileId: "profile_operator_2",
+      bookingId: "booking_completed_1",
+      payoutId: "payout_1",
+      type: "payout_updated",
+      title: "Payout sent",
+      message: "Your GroupRide payout has been marked paid.",
+      channel: "in_app",
+      recipient: "dispatch@queencitycharter.com",
+      status: "sent",
+      createdAt: addHours(createdAt, -72),
+      sentAt: addHours(createdAt, -72),
+    },
   ];
 
-  const audits: AuditLog[] = [
+  const supportThreads: SupportThread[] = [
     {
-      id: "audit_1",
-      bookingId: "booking_confirmed_demo",
-      actor: "system",
-      action: "booking_confirmed",
-      details: "Demo confirmed booking seeded.",
-      createdAt
-    }
+      id: "thread_1",
+      bookingId: "booking_pending_1",
+      profileId: "profile_customer_1",
+      subject: "Arrival timing confirmation",
+      status: "open",
+      lastMessageAt: createdAt,
+      createdAt,
+      updatedAt: createdAt,
+    },
+  ];
+
+  const reviews: Review[] = [
+    {
+      id: "review_1",
+      bookingId: "booking_completed_1",
+      customerProfileId: "profile_customer_1",
+      operatorId: "operator_2",
+      rating: 5,
+      title: "Smooth event transfer",
+      body: "Everything was on time and polished.",
+      status: "published",
+      createdAt: addHours(createdAt, -70),
+      updatedAt: addHours(createdAt, -70),
+    },
+  ];
+
+  const uploadedDocuments: UploadedDocument[] = [
+    {
+      id: "document_1",
+      operatorId: "operator_1",
+      profileId: "profile_operator_1",
+      type: "insurance",
+      fileName: "insurance-certificate.pdf",
+      storagePath: "operators/operator_1/insurance-certificate.pdf",
+      mimeType: "application/pdf",
+      createdAt,
+    },
   ];
 
   return {
-    users,
-    customers,
+    authAccounts,
+    profiles,
     operators,
-    serviceAreas,
     vehicles,
-    pricingRules: createPricingRules(),
+    drivers,
     bookings,
-    offers,
-    paymentMethods,
-    paymentAttempts,
+    bookingPassengers,
+    bookingStops,
+    quotes,
+    payments,
+    payouts,
     notifications,
-    audits
+    supportThreads,
+    reviews,
+    pricingRules: createPricingRules(createdAt),
+    uploadedDocuments,
   };
 }
 
@@ -406,4 +575,12 @@ export function getStore() {
 
 export function resetStore() {
   global.__GROUPRIDE_STORE__ = buildInitialStore();
+}
+
+export function createReference() {
+  return `GR-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+}
+
+export function createId(prefix: string) {
+  return makeId(prefix);
 }

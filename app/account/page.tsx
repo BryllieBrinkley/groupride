@@ -3,26 +3,13 @@ import Navbar from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { requireRole } from "@/lib/auth";
+import { getCustomerDashboard } from "@/lib/services/dashboard";
+import { formatCurrency } from "@/lib/utils";
 
-export default function AccountPage() {
-  const bookings = [
-    {
-      id: "1",
-      pickupLocation: { city: "Charlotte", state: "NC" },
-      dropoffLocation: { city: "Atlanta", state: "GA" },
-      pickupDateTime: "Mar 31, 2026 • 8:30 PM",
-      amount: "$1,250",
-      status: "confirmed",
-    },
-    {
-      id: "2",
-      pickupLocation: { city: "Nashville", state: "TN" },
-      dropoffLocation: { city: "Louisville", state: "KY" },
-      pickupDateTime: "Apr 4, 2026 • 11:00 AM",
-      amount: "$780",
-      status: "pending",
-    },
-  ];
+export default async function AccountPage() {
+  const user = await requireRole(["customer"]);
+  const { bookings, metrics } = getCustomerDashboard(user.profileId);
 
   return (
     <main className="min-h-screen bg-background pt-24">
@@ -36,6 +23,25 @@ export default function AccountPage() {
           <p className="mt-5 text-base leading-7 text-muted-foreground">
             Every request and confirmed ride in one premium dashboard for status, payment, and pickup details.
           </p>
+        </div>
+
+        <div className="mb-8 grid gap-4 md:grid-cols-4">
+          <div className="premium-panel p-5">
+            <p className="premium-eyebrow">Total bookings</p>
+            <p className="mt-3 text-3xl font-medium tracking-[-0.04em] text-foreground">{metrics.totalBookings}</p>
+          </div>
+          <div className="premium-panel p-5">
+            <p className="premium-eyebrow">Active</p>
+            <p className="mt-3 text-3xl font-medium tracking-[-0.04em] text-foreground">{metrics.activeBookings}</p>
+          </div>
+          <div className="premium-panel p-5">
+            <p className="premium-eyebrow">Completed</p>
+            <p className="mt-3 text-3xl font-medium tracking-[-0.04em] text-foreground">{metrics.completedBookings}</p>
+          </div>
+          <div className="premium-panel p-5">
+            <p className="premium-eyebrow">Total spend</p>
+            <p className="mt-3 text-3xl font-medium tracking-[-0.04em] text-foreground">{formatCurrency(metrics.totalSpend)}</p>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -59,7 +65,7 @@ export default function AccountPage() {
                       {booking.dropoffLocation.state}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {booking.pickupDateTime} • {booking.amount}
+                      {booking.pickupDateTimeLocal} • {formatCurrency(booking.finalAmount ?? booking.quotedAmount ?? 0)}
                     </p>
                   </div>
                   <StatusBadge status={booking.status} />

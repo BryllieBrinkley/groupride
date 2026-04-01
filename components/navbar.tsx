@@ -1,96 +1,108 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import Link from "next/link"
+import { useState, useEffect } from "react"
+import { Menu, X } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
-function NavbarComponent() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+export default function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 12);
-    };
-
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const navLinks = [
-    { href: "/", label: "Book a ride" },
-    { href: "/#how-it-works", label: "How it works" },
-    { href: "/become-an-operator", label: "Become an operator" },
-  ];
+      setScrolled(window.scrollY > 10)
+    }
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <div className="page-shell pt-4">
-        <nav
-          className={cn(
-            "rounded-full border px-4 py-3 transition-all duration-300 md:px-6",
-            scrolled
-              ? "border-border bg-background/90 shadow-[0_18px_48px_rgba(75,51,39,0.1)] backdrop-blur"
-              : "border-transparent bg-transparent",
-          )}
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+        scrolled ? 'bg-white/80 backdrop-blur border-b border-border shadow-sm' : 'bg-transparent'
+      }`}
+    >
+      <nav className="flex items-center justify-between px-6 py-5 lg:px-12">
+        <Link href="/" className="text-lg tracking-tight text-foreground lowercase">
+          groupride
+        </Link>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-8">
+          <Link
+            href="/"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
+          >
+            book a ride
+          </Link>
+
+          <Link
+            href="#how-it-works"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
+          >
+            how it works
+          </Link>
+
+          <Link
+            href="/become-an-operator"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
+          >
+            become an operator
+          </Link>
+
+          <Link
+            href="/login"
+            className="text-sm text-foreground lowercase"
+          >
+            login
+          </Link>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden text-foreground"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <div className="flex items-center justify-between gap-4">
-            <Link href="/" className="text-base font-medium tracking-[-0.03em] text-foreground">
-              GroupRide
-            </Link>
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </nav>
 
-            <div className="hidden items-center gap-2 md:flex">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-full px-4 py-2 text-sm text-muted-foreground transition hover:bg-card hover:text-foreground"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Button asChild size="sm">
-                <Link href="/login">Portal login</Link>
-              </Button>
-            </div>
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border px-6 py-6 space-y-4">
+          <Link
+            href="/"
+            className="block text-sm text-muted-foreground hover:text-foreground transition-colors lowercase"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            book a ride
+          </Link>
 
-            <button
-              type="button"
-              className="flex size-11 items-center justify-center rounded-full border border-border bg-background text-foreground md:hidden"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-            </button>
-          </div>
+          <Link
+            href="#how-it-works"
+            className="block text-sm text-muted-foreground lowercase"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            how it works
+          </Link>
 
-          {mobileMenuOpen ? (
-            <div className="mt-4 space-y-2 rounded-[1.75rem] border border-border bg-card p-3 md:hidden">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground transition hover:bg-background hover:text-foreground"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Button asChild className="w-full">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                  Portal login
-                </Link>
-              </Button>
-            </div>
-          ) : null}
-        </nav>
-      </div>
+          <Link
+            href="/operators"
+            className="block text-sm text-muted-foreground lowercase"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            become an operator
+          </Link>
+
+          <Link
+            href="/login"
+            className="block text-sm text-foreground lowercase"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            login
+          </Link>
+        </div>
+      )}
     </header>
-  );
+  )
 }
-
-export default NavbarComponent;
-export { NavbarComponent as Navbar };

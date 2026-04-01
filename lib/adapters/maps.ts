@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 import { haversineMiles, resolveFallbackLocation } from "@/lib/geo";
-import type { LocationInput, RouteEstimate } from "@/lib/types";
+import type { GooglePlaceSelection, LocationInput, RouteEstimate, RouteMetrics } from "@/lib/types";
 import { makeId } from "@/lib/utils";
 
 async function geocodeAddress(input: LocationInput) {
@@ -131,4 +131,78 @@ export async function getRouteEstimate(input: {
   }
 
   return getFallbackRouteEstimate(input);
+}
+
+export async function reverseGeocodeCoordinates(input: { latitude: number; longitude: number }) {
+  if (!env.googleMapsApiKey || env.demoMode) {
+    return {
+      formattedAddress: `Current location near ${input.latitude.toFixed(4)}, ${input.longitude.toFixed(4)}`,
+      placeId: "",
+      latitude: input.latitude,
+      longitude: input.longitude,
+    };
+  }
+
+  const response = await fetch(
+    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${input.latitude},${input.longitude}&key=${env.googleMapsApiKey}`,
+    { cache: "no-store" },
+  );
+
+  if (!response.ok) {
+    throw new Error("Reverse geocoding failed");
+  }
+
+  const payload = (await response.json()) as {
+    results?: Array<{
+      formatted_address: string;
+      place_id?: string;
+      geometry?: { location?: { lat: number; lng: number } };
+    }>;
+  };
+
+  const result = payload.results?.[0];
+  if (!result?.formatted_address) {
+    throw new Error("No reverse geocode result");
+  }
+
+  return {
+    formattedAddress: result.formatted_address,
+    placeId: result.place_id ?? "",
+    latitude: result.geometry?.location?.lat ?? input.latitude,
+    longitude: result.geometry?.location?.lng ?? input.longitude,
+  };
+}
+
+export function getFallbackRouteMetrics(input: {
+  pickup: GooglePlaceSelection;
+  dropoff: GooglePlaceSelection;
+}): RouteMetrics {
+  const pickup = resolveFallbackLocation({
+    addressLine: input.pickup.formattedAddress,
+    city: input.pickup.formattedAddress.split(",")[1]?.trim() ?? "Charlotte",
+    state: input.pickup.formattedAddress.split(",")[2]?.trim().slice(0, 2).toUpperCase() ?? "NC",
+  });
+  pickup.latitude = input.pickup.latitude;
+  pickup.longitude = input.pickup.longitude;
+
+  const dropoff = resolveFallbackLocation({
+    addressLine: input.dropoff.formattedAddress,
+    city: input.dropoff.formattedAddress.split(",")[1]?.trim() ?? "Charlotte",
+    state: input.dropoff.formattedAddress.split(",")[2]?.trim().slice(0, 2).toUpperCase() ?? "NC",
+  });
+  dropoff.latitude = input.dropoff.latitude;
+  dropoff.longitude = input.dropoff.longitude;
+
+  const distanceMiles = Number((haversineMiles(pickup, dropoff) * 1.18).toFixed(1));
+  const driveTimeMinutes = Math.max(10, Math.round(distanceMiles * 2.1));
+
+  return {
+    distanceMiles,
+    driveTimeMinutes,
+    formattedRouteText: `${input.pickup.displayLabel} to ${input.dropoff.displayLabel}`,
+    pickupLat: input.pickup.latitude,
+    pickupLng: input.pickup.longitude,
+    dropoffLat: input.dropoff.latitude,
+    dropoffLng: input.dropoff.longitude,
+  };
 }
