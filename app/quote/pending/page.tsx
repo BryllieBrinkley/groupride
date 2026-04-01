@@ -1,16 +1,19 @@
-"use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
 import Navbar from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Check, ArrowRight } from "lucide-react"
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow"
 import { Button } from "@/components/ui/button"
 
-export default function PendingReviewPage() {
-  const searchParams = useSearchParams()
-  const bookingId = searchParams.get("bookingId")
+export default function PendingReviewPage({
+  searchParams,
+}: {
+  searchParams: {
+    bookingId?: string
+  }
+}) {
+  const bookingId = searchParams.bookingId
 
   return (
     <main className="min-h-screen bg-background pt-24">
