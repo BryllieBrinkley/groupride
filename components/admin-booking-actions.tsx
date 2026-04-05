@@ -15,7 +15,7 @@ export function AdminBookingActions({ bookingId }: { bookingId: string }) {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const runReviewAction = (action: "route_offers" | "close_unfulfilled" | "mark_no_supply") => {
+  const runReviewAction = (action: "request_quote" | "cancel_booking" | "mark_confirmed") => {
     startTransition(async () => {
       setError(null);
       setMessage(null);
@@ -62,14 +62,14 @@ export function AdminBookingActions({ bookingId }: { bookingId: string }) {
   return (
     <div className="premium-panel space-y-5 p-6">
       <div className="flex flex-wrap gap-2">
-        <Button disabled={isPending} onClick={() => runReviewAction("route_offers")}>
-          Send to operators
+        <Button disabled={isPending} onClick={() => runReviewAction("request_quote")}>
+          Request quote
         </Button>
-        <Button disabled={isPending} variant="secondary" onClick={() => runReviewAction("mark_no_supply")}>
-          No vehicles available
+        <Button disabled={isPending} variant="secondary" onClick={() => runReviewAction("mark_confirmed")}>
+          Mark confirmed
         </Button>
-        <Button disabled={isPending} variant="secondary" onClick={() => runReviewAction("close_unfulfilled")}>
-          Close as unfulfilled
+        <Button disabled={isPending} variant="secondary" onClick={() => runReviewAction("cancel_booking")}>
+          Close booking
         </Button>
       </div>
 

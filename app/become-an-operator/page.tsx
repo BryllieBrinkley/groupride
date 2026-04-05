@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useLoadScript } from "@react-google-maps/api";
+import { useState } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 import Navbar from "@/components/navbar";
@@ -11,6 +10,7 @@ import { FormField } from "@/components/shared/FormField";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { GooglePlaceField } from "@/components/google-place-field";
 
 const libraries: ("places")[] = ["places"];
 
@@ -50,37 +50,21 @@ function ServiceAreaField({
   regions: string[];
   setRegions: (regions: string[]) => void;
 }) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries
-  });
-
-  useEffect(() => {
-    if (!isLoaded || !window.google || !inputRef.current) return;
-
-    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-      types: ["(regions)"]
-    });
-
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-      if (place.formatted_address && !regions.includes(place.formatted_address)) {
-        setRegions([...regions, place.formatted_address]);
-        onChange("");
-      }
-    });
-  }, [isLoaded, onChange, regions, setRegions]);
-
   return (
     <FormField label="Service area" htmlFor="service-area">
-      <Input
+      <GooglePlaceField
         id="service-area"
-        ref={inputRef}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        label="Service area"
         placeholder="Enter city, region, or service area"
+        value={value}
+        onValueChange={onChange}
+        onPlaceSelect={(place) => {
+          if (place?.formattedAddress && !regions.includes(place.formattedAddress)) {
+            setRegions([...regions, place.formattedAddress]);
+            onChange("");
+          }
+        }}
+        enableCurrentLocation
       />
       <div className="mt-3 flex flex-wrap gap-2">
         {regions.map((region) => (

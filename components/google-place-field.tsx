@@ -1,33 +1,31 @@
-"use client";
+"use client"
 
-import { Loader2, LocateFixed, MapPin } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLoadScript } from "@react-google-maps/api";
+import { Loader2, LocateFixed, MapPin } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import type { GooglePlaceSelection } from "@/lib/types";
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+import type { GooglePlaceSelection } from "@/lib/types"
 
-const libraries: ("places")[] = ["places"];
-const CHARLOTTE_CENTER = { lat: 35.2271, lng: -80.8431 };
+type Prediction = google.maps.places.AutocompletePrediction
+
+const CHARLOTTE_CENTER = { lat: 35.2271, lng: -80.8431 }
 const DEFAULT_BOUNDS = {
   north: CHARLOTTE_CENTER.lat + 0.45,
   south: CHARLOTTE_CENTER.lat - 0.45,
   east: CHARLOTTE_CENTER.lng + 0.45,
   west: CHARLOTTE_CENTER.lng - 0.45,
-};
-
-type Prediction = google.maps.places.AutocompletePrediction;
+}
 
 function useDebouncedValue<T>(value: T, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setDebouncedValue(value), delay);
-    return () => window.clearTimeout(timeout);
-  }, [value, delay]);
+    const timeout = window.setTimeout(() => setDebouncedValue(value), delay)
+    return () => window.clearTimeout(timeout)
+  }, [value, delay])
 
-  return debouncedValue;
+  return debouncedValue
 }
 
 function getBoundsFromCenter(center: google.maps.LatLngLiteral, radiusDegrees = 0.35) {
@@ -36,25 +34,19 @@ function getBoundsFromCenter(center: google.maps.LatLngLiteral, radiusDegrees = 
     south: center.lat - radiusDegrees,
     east: center.lng + radiusDegrees,
     west: center.lng - radiusDegrees,
-  };
-}
-
-function serializePrediction(prediction: Prediction) {
-  return prediction.structured_formatting.secondary_text
-    ? `${prediction.structured_formatting.main_text}, ${prediction.structured_formatting.secondary_text}`
-    : prediction.description;
+  }
 }
 
 interface GooglePlaceFieldProps {
-  id: string;
-  label: string;
-  placeholder: string;
-  value: string;
-  onValueChange: (value: string) => void;
-  onPlaceSelect: (place: GooglePlaceSelection | null) => void;
-  selectedPlace?: GooglePlaceSelection | null;
-  className?: string;
-  enableCurrentLocation?: boolean;
+  id: string
+  label: string
+  placeholder: string
+  value: string
+  onValueChange: (value: string) => void
+  onPlaceSelect: (place: GooglePlaceSelection | null) => void
+  selectedPlace?: GooglePlaceSelection | null
+  className?: string
+  enableCurrentLocation?: boolean
 }
 
 export function GooglePlaceField({
@@ -68,73 +60,72 @@ export function GooglePlaceField({
   className,
   enableCurrentLocation = false,
 }: GooglePlaceFieldProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const serviceContainerRef = useRef<HTMLDivElement | null>(null);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
-  const activeRequestId = useRef(0);
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const serviceContainerRef = useRef<HTMLDivElement | null>(null)
+  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null)
+  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null)
+  const activeRequestId = useRef(0)
 
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [locationBias, setLocationBias] = useState<google.maps.LatLngBoundsLiteral>(DEFAULT_BOUNDS);
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
-  const [currentLocationError, setCurrentLocationError] = useState<string | null>(null);
+  const [predictions, setPredictions] = useState<Prediction[]>([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const [locationBias, setLocationBias] = useState<google.maps.LatLngBoundsLiteral>(DEFAULT_BOUNDS)
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false)
+  const [currentLocationError, setCurrentLocationError] = useState<string | null>(null)
 
-  const debouncedValue = useDebouncedValue(value, 250);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries,
-  });
+  const debouncedValue = useDebouncedValue(value, 250)
+  const isLoaded = typeof window !== "undefined" && !!window.google?.maps?.places
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      return;
+      return
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocationBias(
-          getBoundsFromCenter({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          }, 0.3),
-        );
+          getBoundsFromCenter(
+            {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            },
+            0.3,
+          ),
+        )
       },
       () => {
-        setLocationBias(DEFAULT_BOUNDS);
+        setLocationBias(DEFAULT_BOUNDS)
       },
       { enableHighAccuracy: false, timeout: 2500, maximumAge: 1000 * 60 * 30 },
-    );
-  }, []);
+    )
+  }, [])
 
   useEffect(() => {
-    if (!isLoaded || !window.google || !serviceContainerRef.current) {
-      return;
+    if (!isLoaded || !serviceContainerRef.current) {
+      return
     }
 
-    autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-    placesServiceRef.current = new window.google.maps.places.PlacesService(serviceContainerRef.current);
-  }, [isLoaded]);
+    autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService()
+    placesServiceRef.current = new window.google.maps.places.PlacesService(serviceContainerRef.current)
+  }, [isLoaded])
 
   useEffect(() => {
     if (!isLoaded || !autocompleteServiceRef.current) {
-      return;
+      return
     }
 
-    const query = debouncedValue.trim();
+    const query = debouncedValue.trim()
     if (query.length < 2) {
-      setPredictions([]);
-      setIsLoading(false);
-      setActiveIndex(-1);
-      return;
+      setPredictions([])
+      setIsLoading(false)
+      setActiveIndex(-1)
+      return
     }
 
-    const requestId = ++activeRequestId.current;
-    setIsLoading(true);
+    const requestId = ++activeRequestId.current
+    setIsLoading(true)
 
     autocompleteServiceRef.current.getPlacePredictions(
       {
@@ -145,97 +136,93 @@ export function GooglePlaceField({
       },
       (results, status) => {
         if (requestId !== activeRequestId.current) {
-          return;
+          return
         }
 
-        setIsLoading(false);
+        setIsLoading(false)
 
         if (status !== window.google.maps.places.PlacesServiceStatus.OK || !results) {
-          setPredictions([]);
-          setActiveIndex(-1);
-          return;
+          setPredictions([])
+          setActiveIndex(-1)
+          return
         }
 
-        setPredictions(results);
-        setIsOpen(true);
-        setActiveIndex(results.length > 0 ? 0 : -1);
+        setPredictions(results)
+        setIsOpen(true)
+        setActiveIndex(results.length > 0 ? 0 : -1)
       },
-    );
-  }, [debouncedValue, isLoaded, locationBias]);
+    )
+  }, [debouncedValue, isLoaded, locationBias])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const emptyStateLabel = useMemo(() => {
-    if (loadError) return "Google Maps failed to load.";
-    if (!debouncedValue.trim()) return "Search airports, hotels, venues, cities, landmarks, or addresses.";
-    return "No places found. Try another spelling or a nearby landmark.";
-  }, [debouncedValue, loadError]);
+    if (!isLoaded) return "Google Maps is still loading."
+    if (!debouncedValue.trim()) return "Search airports, hotels, venues, cities, landmarks, or addresses."
+    return "No places found. Try another spelling or a nearby landmark."
+  }, [debouncedValue, isLoaded])
 
   const handleSelectPrediction = (prediction: Prediction) => {
     if (!placesServiceRef.current || !window.google) {
-      return;
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     placesServiceRef.current.getDetails(
       {
         placeId: prediction.place_id,
         fields: ["formatted_address", "geometry", "name", "place_id"],
       },
       (place, status) => {
-        setIsLoading(false);
+        setIsLoading(false)
 
-        if (status !== window.google.maps.places.PlacesServiceStatus.OK || !place?.geometry?.location || !place.place_id) {
-          return;
+        if (
+          status !== window.google.maps.places.PlacesServiceStatus.OK ||
+          !place?.geometry?.location ||
+          !place.place_id
+        ) {
+          return
         }
 
         const selection: GooglePlaceSelection = {
-          displayLabel: place.name ? `${place.name}${place.formatted_address ? `, ${place.formatted_address}` : ""}` : serializePrediction(prediction),
+          displayLabel: place.name ? `${place.name}${place.formatted_address ? `, ${place.formatted_address}` : ""}` : prediction.description,
           formattedAddress: place.formatted_address ?? prediction.description,
           placeId: place.place_id,
           latitude: place.geometry.location.lat(),
           longitude: place.geometry.location.lng(),
-        };
+        }
 
-        onValueChange(selection.displayLabel);
-        onPlaceSelect(selection);
-        setPredictions([]);
-        setIsOpen(false);
-        setActiveIndex(-1);
+        onValueChange(selection.displayLabel)
+        onPlaceSelect(selection)
+        setPredictions([])
+        setIsOpen(false)
+        setActiveIndex(-1)
       },
-    );
-  };
+    )
+  }
 
-  const showDropdown = isOpen && (isLoading || predictions.length > 0 || Boolean(debouncedValue.trim()) || Boolean(loadError));
+  const showDropdown = isOpen && (isLoading || predictions.length > 0 || Boolean(debouncedValue.trim()) || !isLoaded)
 
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setCurrentLocationError("Current location is not supported in this browser.");
-      return;
+      setCurrentLocationError("Current location is not supported in this browser.")
+      return
     }
 
-    if (!isLoaded) {
-      setCurrentLocationError("Google Maps is still loading.");
-      return;
-    }
-
-    setIsUsingCurrentLocation(true);
-    setCurrentLocationError(null);
+    setIsUsingCurrentLocation(true)
+    setCurrentLocationError(null)
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
         void (async () => {
           try {
             const response = await fetch("/api/maps/reverse-geocode", {
@@ -244,56 +231,56 @@ export function GooglePlaceField({
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                latitude,
-                longitude,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
               }),
-            });
+            })
 
             const payload = (await response.json()) as {
-              formattedAddress?: string;
-              placeId?: string;
-              latitude?: number;
-              longitude?: number;
-              error?: string;
-            };
+              formattedAddress?: string
+              placeId?: string
+              latitude?: number
+              longitude?: number
+              error?: string
+            }
 
             if (!response.ok || !payload.formattedAddress) {
-              throw new Error(payload.error ?? "Unable to reverse geocode current location.");
+              throw new Error(payload.error ?? "Unable to reverse geocode current location.")
             }
 
             const selection: GooglePlaceSelection = {
               displayLabel: payload.formattedAddress,
               formattedAddress: payload.formattedAddress,
               placeId: payload.placeId ?? "",
-              latitude: payload.latitude ?? latitude,
-              longitude: payload.longitude ?? longitude,
-            };
+              latitude: payload.latitude ?? position.coords.latitude,
+              longitude: payload.longitude ?? position.coords.longitude,
+            }
 
-            onValueChange(selection.formattedAddress);
-            onPlaceSelect(selection);
-            setIsOpen(false);
-            setPredictions([]);
-            setActiveIndex(-1);
+            onValueChange(selection.formattedAddress)
+            onPlaceSelect(selection)
+            setIsOpen(false)
+            setPredictions([])
+            setActiveIndex(-1)
           } catch (error) {
             setCurrentLocationError(
               error instanceof Error ? error.message : "We found your location, but couldn’t match it to an address.",
-            );
+            )
           } finally {
-            setIsUsingCurrentLocation(false);
+            setIsUsingCurrentLocation(false)
           }
-        })();
+        })()
       },
       (error) => {
-        setIsUsingCurrentLocation(false);
+        setIsUsingCurrentLocation(false)
         if (error.code === error.PERMISSION_DENIED) {
-          setCurrentLocationError("Location permission was denied.");
-          return;
+          setCurrentLocationError("Location permission was denied.")
+          return
         }
-        setCurrentLocationError("Unable to get your current location right now.");
+        setCurrentLocationError("Unable to get your current location right now.")
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 * 60 * 5 },
-    );
-  };
+    )
+  }
 
   return (
     <div ref={rootRef} className={cn("relative", className)}>
@@ -310,33 +297,33 @@ export function GooglePlaceField({
           value={value}
           autoComplete="off"
           onChange={(event) => {
-            onValueChange(event.target.value);
-            onPlaceSelect(null);
-            setIsOpen(true);
+            onValueChange(event.target.value)
+            onPlaceSelect(null)
+            setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={(event) => {
             if (!showDropdown || predictions.length === 0) {
-              return;
+              return
             }
 
             if (event.key === "ArrowDown") {
-              event.preventDefault();
-              setActiveIndex((current) => (current + 1) % predictions.length);
+              event.preventDefault()
+              setActiveIndex((current) => (current + 1) % predictions.length)
             }
 
             if (event.key === "ArrowUp") {
-              event.preventDefault();
-              setActiveIndex((current) => (current <= 0 ? predictions.length - 1 : current - 1));
+              event.preventDefault()
+              setActiveIndex((current) => (current <= 0 ? predictions.length - 1 : current - 1))
             }
 
             if (event.key === "Enter" && activeIndex >= 0) {
-              event.preventDefault();
-              void handleSelectPrediction(predictions[activeIndex]);
+              event.preventDefault()
+              void handleSelectPrediction(predictions[activeIndex])
             }
 
             if (event.key === "Escape") {
-              setIsOpen(false);
+              setIsOpen(false)
             }
           }}
           placeholder={placeholder}
@@ -413,5 +400,5 @@ export function GooglePlaceField({
         </div>
       ) : null}
     </div>
-  );
+  )
 }

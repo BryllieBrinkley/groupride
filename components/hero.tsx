@@ -84,19 +84,19 @@ export function Hero() {
   return (
     <section className="min-h-screen bg-[#f7f4ef]">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
-        <div className="flex flex-1 flex-col justify-center px-6 pt-28 pb-14 lg:px-12 lg:pt-0 lg:pb-0">
+        <div className="flex flex-1 flex-col justify-center px-6 pt-30 pb-16 lg:px-14 lg:pt-0 lg:pb-0">
           <div className="max-w-xl">
             <div className="mb-6 inline-flex rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-medium uppercase tracking-[0.16em] text-black/55">
               trusted group transportation
             </div>
 
-            <h1 className="text-5xl font-normal leading-[0.92] tracking-[-0.06em] text-black lowercase sm:text-6xl lg:text-7xl">
+            <h1 className="text-[clamp(3rem,7.2vw,5.8rem)] font-semibold leading-[0.96] tracking-[-0.05em] text-black lowercase">
               group travel,
               <br />
               made simple.
             </h1>
 
-            <p className="mt-8 max-w-md text-lg leading-relaxed text-black/60 lowercase">
+            <p className="mt-8 max-w-md text-[clamp(1.02rem,0.35vw+0.95rem,1.2rem)] leading-8 text-black/60 lowercase">
               book charter buses, sprinter vans, and group transportation in
               minutes.
             </p>
@@ -119,7 +119,7 @@ export function Hero() {
               </div>
             </div>
 
-            <div className="mt-12 flex flex-col gap-8">
+            <div className="mt-14 flex flex-col gap-9">
               <div className="flex items-center gap-8 text-sm lowercase text-black/45">
                 <div>
                   <p className="text-2xl font-medium text-black">6–100+</p>
@@ -152,21 +152,21 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-6 pb-14 lg:px-12 lg:pb-0">
+        <div className="flex flex-1 items-center justify-center px-6 pb-16 lg:px-14 lg:pb-0">
           <div className="w-full max-w-md">
-            <div className="rounded-[32px] border border-[#d8d2ca] bg-[#e9e4dd] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.08)] lg:p-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-medium lowercase text-black">
+            <div className="rounded-[32px] border border-[#d8d2ca] bg-[#e9e4dd] p-7 shadow-[0_26px_68px_rgba(0,0,0,0.08)] lg:p-9">
+              <div className="mb-7">
+                <h2 className="text-[1.9rem] font-semibold lowercase text-black">
                   get a quote
                 </h2>
 
-                <p className="mt-2 text-sm lowercase text-black/50">
+                <p className="mt-3 text-[15px] leading-6 lowercase text-black/55">
                   tell us where you're going and we'll match you with the right
                   vehicle.
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <GooglePlaceField
                   id="hero-pickup"
                   label="pickup"
@@ -188,25 +188,25 @@ export function Hero() {
                   placeholder="venue, hotel, or destination"
                 />
 
-                <div className="rounded-2xl border border-black/10 bg-[#f7f4ef] px-4 py-4">
+                <div className="rounded-2xl border border-black/10 bg-[#f7f4ef] px-[1.125rem] py-[1.125rem]">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="text-xs font-medium uppercase tracking-[0.12em] text-black/45">
                         live quote summary
                       </p>
-                      <p className="mt-2 text-sm text-black/55">
+                      <p className="mt-2 text-[15px] leading-6 text-black/58">
                         {metrics ? metrics.formattedRouteText : "Select pickup and dropoff to price your route."}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs uppercase tracking-[0.12em] text-black/40">estimated total</p>
-                      <p className="mt-2 text-2xl font-medium text-black">
+                      <p className="mt-2 text-[1.75rem] font-semibold text-black">
                         {quoteBreakdown ? `$${quoteBreakdown.total.toFixed(0)}` : "--"}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-black/8 bg-white/60 px-3 py-3">
                       <p className="text-[11px] uppercase tracking-[0.12em] text-black/40">distance</p>
                       <p className="mt-2 text-sm text-black/70">
@@ -226,7 +226,7 @@ export function Hero() {
                   </div>
 
                   {routeError ? (
-                    <p className="mt-3 text-xs leading-5 text-[#8c5d50]">{routeError}</p>
+                    <p className="mt-3 text-[12px] leading-5 text-[#8c5d50]">{routeError}</p>
                   ) : null}
                 </div>
 

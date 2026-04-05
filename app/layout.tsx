@@ -1,11 +1,25 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 
-import './globals.css'
+import './globals.css';
+import Script from 'next/script';
+import { Metadata } from 'next';
+import { Inter, Manrope } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+// import { Geist, Geist_Mono } from '@next/font/google'; // Uncomment if using next/font
+// const geist = Geist({ subsets: ["latin"] });
+// const geistMono = Geist_Mono({ subsets: ["latin"] });
+// If using local font, ensure it's loaded in globals.css and use className="font-sans" as below.
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const bodyFont = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+});
+
+const headingFont = Manrope({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-heading',
+});
 
 export const metadata: Metadata = {
   title: 'groupride - group travel, handled.',
@@ -30,17 +44,21 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className={`${bodyFont.variable} ${headingFont.variable} font-sans antialiased`}>
+        {googleMapsApiKey && (
+          <Script
+            src={`https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=places&language=en`}
+            strategy="beforeInteractive"
+          />
+        )}
         {children}
         <Analytics />
       </body>
     </html>
-  )
+  );
 }

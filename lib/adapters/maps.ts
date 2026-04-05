@@ -58,9 +58,9 @@ async function getGoogleRouteEstimate(input: {
 
   const response = await fetch(
     `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(
-      pickup.label
+      pickup.label,
     )}&destination=${encodeURIComponent(dropoff.label)}${waypointParam}&key=${env.googleMapsApiKey}`,
-    { cache: "no-store" }
+    { cache: "no-store" },
   );
 
   if (!response.ok) {
@@ -85,7 +85,7 @@ async function getGoogleRouteEstimate(input: {
     dropoff,
     stops,
     distanceMiles: Number((distanceMeters / 1609.34).toFixed(1)),
-    estimatedDurationMinutes: Math.max(15, Math.round(durationSeconds / 60))
+    estimatedDurationMinutes: Math.max(15, Math.round(durationSeconds / 60)),
   };
 }
 

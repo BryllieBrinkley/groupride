@@ -2,7 +2,8 @@ import Link from "next/link";
 import Navbar from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { SectionEyebrow } from "@/components/shared/SectionEyebrow";
-import { StatusBadge } from "@/components/shared/StatusBadge";
+import { SectionCard } from "@/components/shared/SectionCard";
+import { TripSummaryCard } from "@/components/shared/TripSummaryCard";
 import { requireRole } from "@/lib/auth";
 import { getCustomerDashboard } from "@/lib/services/dashboard";
 import { formatCurrency } from "@/lib/utils";
@@ -44,6 +45,11 @@ export default async function AccountPage() {
           </div>
         </div>
 
+        <SectionCard
+          eyebrow="Trip history"
+          title="Bookings and status"
+          description="Every request and confirmed ride in one premium dashboard for status, payment, and pickup details."
+        >
         <div className="space-y-4">
           {bookings.length === 0 ? (
             <div className="premium-panel p-6 text-sm text-muted-foreground">
@@ -57,23 +63,21 @@ export default async function AccountPage() {
               href={`/booking/status?id=${booking.id}`}
               className="block"
             >
-              <div className="premium-panel p-6 transition hover:-translate-y-0.5 hover:border-primary/20">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-lg font-medium text-foreground">
-                      {booking.pickupLocation.city}, {booking.pickupLocation.state} to {booking.dropoffLocation.city},{" "}
-                      {booking.dropoffLocation.state}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {booking.pickupDateTimeLocal} • {formatCurrency(booking.finalAmount ?? booking.quotedAmount ?? 0)}
-                    </p>
-                  </div>
-                  <StatusBadge status={booking.status} />
-                </div>
-              </div>
+              <TripSummaryCard
+                eyebrow={`Reference ${booking.reference}`}
+                title={`${booking.pickupLocation.city}, ${booking.pickupLocation.state} to ${booking.dropoffLocation.city}, ${booking.dropoffLocation.state}`}
+                route={booking.formattedRouteText ?? `${booking.pickupLocation.city} to ${booking.dropoffLocation.city}`}
+                dateTime={booking.pickupDateTimeLocal}
+                passengers={booking.passengers}
+                vehicle={booking.requestedVehicleCategory ?? "vehicle pending"}
+                amount={booking.finalAmount ?? booking.quotedAmount ?? 0}
+                status={booking.status}
+                compact
+              />
             </Link>
           ))}
         </div>
+        </SectionCard>
       </section>
       <Footer />
     </main>
